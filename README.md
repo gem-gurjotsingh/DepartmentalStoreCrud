@@ -1,6 +1,6 @@
 # DepartmentalStoreCrud
 
-This is an departmental management system that tracks product inventory, customer information, and orders placed by the customers. The system allows customers to place orders for products, with support for backorders when inventory is unavailable.
+This is a departmental management system that tracks product inventory, customer information, and orders placed by the customers. The system allows customers to place orders for products, with support for backorders when inventory is unavailable.
 
 ## Table of Contents
 
