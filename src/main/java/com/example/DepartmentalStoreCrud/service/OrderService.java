@@ -4,6 +4,7 @@ import com.example.DepartmentalStoreCrud.bean.Backorder;
 import com.example.DepartmentalStoreCrud.bean.Customer;
 import com.example.DepartmentalStoreCrud.bean.Order;
 import com.example.DepartmentalStoreCrud.bean.ProductInventory;
+import com.example.DepartmentalStoreCrud.repository.BackorderRepository;
 import com.example.DepartmentalStoreCrud.repository.CustomerRepository;
 import com.example.DepartmentalStoreCrud.repository.OrderRepository;
 import com.example.DepartmentalStoreCrud.repository.ProductInventoryRepository;
@@ -27,6 +28,9 @@ public class OrderService {
 
     @Autowired
     private CustomerRepository customerRepo;
+
+    @Autowired
+    private BackorderRepository backorderRepo;
 
     public List<Order> getAllOrders()
     {
@@ -75,8 +79,13 @@ public class OrderService {
         checkProductAvail(order);
     }
 
-    public void deleteOrderDetails(Long orderID) {
+    public void deleteOrderDetails(Long orderID, Order order) {
         orderRepo.findById(orderID).orElseThrow(NoSuchElementException::new);
+        Backorder backorder = backorderRepo.findByOrder(order);
+
+        if (backorder != null) {
+            backorderService.deleteBackorder(backorder.getBackorderID());
+        }
         orderRepo.deleteById(orderID);
     }
 }
