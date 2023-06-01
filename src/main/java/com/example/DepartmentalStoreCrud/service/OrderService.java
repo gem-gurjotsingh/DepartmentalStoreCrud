@@ -11,7 +11,6 @@ import com.example.DepartmentalStoreCrud.repository.ProductInventoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLOutput;
 import java.util.List;
 import java.util.NoSuchElementException;
 
