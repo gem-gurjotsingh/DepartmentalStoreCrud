@@ -3,10 +3,12 @@ package com.example.DepartmentalStoreCrud.controller;
 import com.example.DepartmentalStoreCrud.bean.Order;
 import com.example.DepartmentalStoreCrud.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 public class OrderController {
@@ -33,7 +35,7 @@ public class OrderController {
             return ResponseEntity.ok("Order placed successfully.");
         }
         catch(IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.ok("Order placed successfully but out of stock. We will notify you once it is in stock");
         }
     }
 
@@ -43,7 +45,8 @@ public class OrderController {
             orderService.updateOrderDetails(order);
             return ResponseEntity.ok("Order updated successfully.");
         } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Order placed successfully but out of stock. We will notify you once it is in stock");
         }
     }
 

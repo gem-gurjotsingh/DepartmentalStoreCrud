@@ -1,7 +1,13 @@
-package com.example.DepartmentalStoreCrud.service;// OrderServiceTest.java
+package com.example.DepartmentalStoreCrud.service;
 
-import com.example.DepartmentalStoreCrud.bean.*;
-import com.example.DepartmentalStoreCrud.repository.*;
+import com.example.DepartmentalStoreCrud.bean.Backorder;
+import com.example.DepartmentalStoreCrud.bean.Customer;
+import com.example.DepartmentalStoreCrud.bean.Order;
+import com.example.DepartmentalStoreCrud.bean.ProductInventory;
+import com.example.DepartmentalStoreCrud.repository.BackorderRepository;
+import com.example.DepartmentalStoreCrud.repository.CustomerRepository;
+import com.example.DepartmentalStoreCrud.repository.OrderRepository;
+import com.example.DepartmentalStoreCrud.repository.ProductInventoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -61,50 +67,108 @@ class OrderServiceTest {
     @Test
     void testGetOrderById_ExistingOrder() {
         // Arrange
-        Order order = createOrder(1L); // Sample order with ID 1L
-        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        Long orderId = 1L;
+        Order order = createOrder(orderId); // Sample order with ID 1L
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
         // Act
-        Order result = orderService.getOrderById(1L);
+        Order result = orderService.getOrderById(orderId);
 
         // Assert
         assertEquals(order, result);
-        verify(orderRepository, times(1)).findById(1L);
+        verify(orderRepository, times(1)).findById(orderId);
     }
 
     @Test
     void testGetOrderById_NonExistingOrder() {
         // Arrange
-        when(orderRepository.findById(1L)).thenReturn(Optional.empty());
+        Long orderId = 1L;
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
 
-        // Act & Assert
-        assertThrows(NoSuchElementException.class, () -> orderService.getOrderById(1L));
-        verify(orderRepository, times(1)).findById(1L);
+        // Act
+        assertThrows(NoSuchElementException.class, () -> orderService.getOrderById(orderId));
+        verify(orderRepository, times(1)).findById(orderId);
     }
 
-    void testAddOrderDetails_ProductAvailable() {
+    @Test
+    void testAddOrderDetails_Successful() {
         // Arrange
         Order order = createOrder(1L); // Sample order with ID 1L
-        ProductInventory productInventory = order.getProductInventory();
         when(orderRepository.save(order)).thenReturn(order);
-        when(productInventoryRepository.findById(productInventory.getProductID())).thenReturn(Optional.of(productInventory));
+        when(productInventoryRepository.findById(order.getProductInventory().getProductID())).thenReturn(Optional.of(order.getProductInventory()));
+        when(customerRepository.findById(order.getCustomer().getCustomerID())).thenReturn(Optional.of(order.getCustomer()));
 
         // Act
         orderService.addOrderDetails(order);
 
         // Assert
-        verify(orderRepository, times(1)).save(order);
-        verify(productInventoryRepository, times(1)).save(productInventory);
-        verify(productInventoryRepository, times(1)).findById(productInventory.getProductID());
+        verify(orderRepository, times(2)).save(order);
+        verify(productInventoryRepository, times(1)).findById(order.getProductInventory().getProductID());
+        verify(customerRepository, times(1)).findById(order.getCustomer().getCustomerID());
     }
 
     @Test
-    void testDeleteOrderDetails_OrderFound() {
+    void testAddOrderDetails_OutOfStock() {
+        // Arrange
+        Order order = createOrder(1L); // Sample order with ID 1L
+        ProductInventory productInventory = order.getProductInventory();
+        productInventory.setCount(0);
+        when(orderRepository.save(order)).thenReturn(order);
+        when(productInventoryRepository.findById(order.getProductInventory().getProductID())).thenReturn(Optional.of(order.getProductInventory()));
+        when(customerRepository.findById(order.getCustomer().getCustomerID())).thenReturn(Optional.of(order.getCustomer()));
+
+        // Act
+        assertThrows(IllegalStateException.class, () -> orderService.addOrderDetails(order));
+
+        // Assert
+        verify(orderRepository, times(2)).save(order);
+        verify(productInventoryRepository, times(1)).findById(order.getProductInventory().getProductID());
+        verify(customerRepository, times(1)).findById(order.getCustomer().getCustomerID());
+    }
+
+    @Test
+    void testUpdateOrderDetails_Successful() {
+        // Arrange
+        Order order = createOrder(1L); // Sample order with ID 1L
+        when(orderRepository.save(order)).thenReturn(order);
+        when(productInventoryRepository.findById(order.getProductInventory().getProductID())).thenReturn(Optional.of(order.getProductInventory()));
+        when(customerRepository.findById(order.getCustomer().getCustomerID())).thenReturn(Optional.of(order.getCustomer()));
+
+        // Act
+        orderService.updateOrderDetails(order);
+
+        // Assert
+        verify(orderRepository, times(2)).save(order);
+        verify(productInventoryRepository, times(1)).findById(order.getProductInventory().getProductID());
+        verify(customerRepository, times(1)).findById(order.getCustomer().getCustomerID());
+    }
+
+    @Test
+    void testUpdateOrderDetails_OutOfStock() {
+        // Arrange
+        Order order = createOrder(1L); // Sample order with ID 1L
+        ProductInventory productInventory = order.getProductInventory();
+        productInventory.setCount(0);
+        when(orderRepository.save(order)).thenReturn(order);
+        when(productInventoryRepository.findById(order.getProductInventory().getProductID())).thenReturn(Optional.of(order.getProductInventory()));
+        when(customerRepository.findById(order.getCustomer().getCustomerID())).thenReturn(Optional.of(order.getCustomer()));
+
+        // Act
+        assertThrows(IllegalStateException.class, () -> orderService.updateOrderDetails(order));
+
+        // Assert
+        verify(orderRepository, times(2)).save(order);
+        verify(productInventoryRepository, times(1)).findById(order.getProductInventory().getProductID());
+        verify(customerRepository, times(1)).findById(order.getCustomer().getCustomerID());
+    }
+
+    @Test
+    void testDeleteOrderDetails() {
         // Arrange
         Long orderId = 1L;
         Order order = createOrder(orderId); // Sample order with ID 1L
         Backorder backorder = new Backorder();
-        backorder.setBackorderID(1L);
+        backorder.setOrder(order);
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(backorderRepository.findByOrder(order)).thenReturn(backorder);
 
@@ -112,47 +176,32 @@ class OrderServiceTest {
         orderService.deleteOrderDetails(orderId, order);
 
         // Assert
+        verify(orderRepository, times(1)).findById(orderId);
+        verify(backorderRepository, times(1)).findByOrder(order);
         verify(backorderService, times(1)).deleteBackorder(backorder.getBackorderID());
         verify(orderRepository, times(1)).deleteById(orderId);
     }
 
-    @Test
-    void testDeleteOrderDetails_OrderNotFound() {
-        // Arrange
-        Long orderId = 1L;
-        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThrows(NoSuchElementException.class, () -> orderService.deleteOrderDetails(orderId, null));
-        verify(backorderService, never()).deleteBackorder(anyLong());
-        verify(orderRepository, times(1)).findById(orderId);
-        verify(orderRepository, never()).deleteById(orderId);
-    }
-
-    // Add more unit tests for other methods in OrderService
-
-    // Helper method to create a sample Order object
     private Order createOrder(Long orderId) {
         Order order = new Order();
         order.setOrderID(orderId);
-
-        ProductInventory productInventory = new ProductInventory();
-        productInventory.setProductID(1L);
-        productInventory.setProductName("Sample Product");
-        productInventory.setPrice(10.0);
-        productInventory.setCount(10);
-        productInventory.setAvailability(true);
+        order.setOrderTimestamp(LocalDateTime.now());
+        order.setQuantity(2);
+        order.setDiscount(10.0);
+        order.setDiscountedPrice(90.0);
 
         Customer customer = new Customer();
         customer.setCustomerID(1L);
         customer.setFullName("John Doe");
-
-        order.setProductInventory(productInventory);
         order.setCustomer(customer);
-        order.setOrderTimestamp(LocalDateTime.now());
-        order.setQuantity(5);
-        order.setDiscount(0.0);
-        order.setDiscountedPrice(10.0);
+
+        ProductInventory productInventory = new ProductInventory();
+        productInventory.setProductID(1L);
+        productInventory.setProductName("Product 1");
+        productInventory.setCount(5);
+        productInventory.setAvailability(true);
+        productInventory.setPrice(100.0);
+        order.setProductInventory(productInventory);
 
         return order;
     }

@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class OrderControllerTest {
@@ -66,19 +66,16 @@ class OrderControllerTest {
         verify(orderService, times(1)).getOrderById(orderId);
     }
 
-//    @Test
-//    void testGetOrderById_NonExistingOrder() {
-//        // Arrange
-//        Long orderId = 1L;
-//        when(orderService.getOrderById(orderId)).thenThrow(NoSuchElementException.class);
-//
-//        // Act
-//        ResponseEntity<Order> response = orderController.getOrderById(orderId);
-//
-//        // Assert
-//        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-//        verify(orderService, times(1)).getOrderById(orderId);
-//    }
+    @Test
+    void testGetOrderById_NonExistingOrder() {
+        // Arrange
+        Long orderId = 1L;
+        when(orderService.getOrderById(orderId)).thenThrow(NoSuchElementException.class);
+
+        // Act and Assert
+        assertThrows(NoSuchElementException.class, () -> orderController.getOrderById(orderId));
+        verify(orderService, times(1)).getOrderById(orderId);
+    }
 
     @Test
     void testAddOrderDetails_Successful() {
@@ -95,20 +92,19 @@ class OrderControllerTest {
         verify(orderService, times(1)).addOrderDetails(order);
     }
 
-//    @Test
-//    void testAddOrderDetails_OutOfStock() {
-//        // Arrange
-//        Order order = createOrder(1L); // Sample order with ID 1L
-//        Mockito.doNothing().when(orderService).addOrderDetails(order);
-//
-//        // Act
-//        ResponseEntity<String> response = orderController.addOrderDetails(order);
-//
-//        // Assert
-//        assertEquals(HttpStatus.OK, response.getStatusCode());
-//        assertEquals("Order placed successfully but out of stock. We will notify you once it is in stock", response.getBody());
-//        verify(orderService, times(1)).addOrderDetails(order);
-//    }
+    @Test
+    void testAddOrderDetails_OutOfStock() {
+        // Arrange
+        Order order = createOrder(1L); // Sample order with ID 1L
+        doThrow(IllegalStateException.class).when(orderService).addOrderDetails(order);
+        // Act
+        ResponseEntity<String> response = orderController.addOrderDetails(order);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Order placed successfully but out of stock. We will notify you once it is in stock", response.getBody());
+        verify(orderService, times(1)).addOrderDetails(order);
+    }
 
     @Test
     void testUpdateOrderDetails_Successful() {
@@ -125,20 +121,20 @@ class OrderControllerTest {
         verify(orderService, times(1)).updateOrderDetails(order);
     }
 
-//    @Test
-//    void testUpdateOrderDetails_OutOfStock() {
-//        // Arrange
-//        Order order = createOrder(1L); // Sample order with ID 1L
-//        Mockito.doNothing().when(orderService).updateOrderDetails(order);
-//
-//        // Act
-//        ResponseEntity<String> response = orderController.updateOrderDetails(order);
-//
-//        // Assert
-//        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-//        assertEquals("Order placed successfully but out of stock. We will notify you once it is in stock", response.getBody());
-//        verify(orderService, times(1)).updateOrderDetails(order);
-//    }
+    @Test
+    void testUpdateOrderDetails_OutOfStock() {
+        // Arrange
+        Order order = createOrder(1L); // Sample order with ID 1L
+        doThrow(IllegalStateException.class).when(orderService).updateOrderDetails(order);
+
+        // Act
+        ResponseEntity<String> response = orderController.updateOrderDetails(order);
+
+        // Assert
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Order placed successfully but out of stock. We will notify you once it is in stock", response.getBody());
+        verify(orderService, times(1)).updateOrderDetails(order);
+    }
 
     @Test
     void testDeleteOrderDetails() {
@@ -164,7 +160,7 @@ class OrderControllerTest {
         productInventory.setProductID(1L);
         productInventory.setProductName("Sample Product");
         productInventory.setPrice(10.0);
-        productInventory.setCount(100);
+        productInventory.setCount(5);
         productInventory.setAvailability(true);
 
         Customer customer = new Customer();
@@ -174,7 +170,7 @@ class OrderControllerTest {
         order.setProductInventory(productInventory);
         order.setCustomer(customer);
         order.setOrderTimestamp(LocalDateTime.now());
-        order.setQuantity(5);
+        order.setQuantity(10);
         order.setDiscount(0.0);
         order.setDiscountedPrice(10.0);
 
