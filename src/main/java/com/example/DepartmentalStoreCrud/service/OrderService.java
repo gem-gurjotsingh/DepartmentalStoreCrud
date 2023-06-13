@@ -84,6 +84,8 @@ public class OrderService {
     public void deleteOrderDetails(Long orderID, Order order) {
         Order savedOrder = orderRepo.findById(orderID).orElseThrow(NoSuchElementException::new);
         ProductInventory productInventory = savedOrder.getProductInventory();
+
+        if(productInventory.getCount()>0)
         productInventory.setCount(productInventory.getCount() + savedOrder.getQuantity());
 
         Backorder backorder = backorderRepo.findByOrder(order);
