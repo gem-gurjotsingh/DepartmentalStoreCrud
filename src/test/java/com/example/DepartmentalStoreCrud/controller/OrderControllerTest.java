@@ -97,14 +97,13 @@ class OrderControllerTest {
         // Arrange
         Order order = createOrder(1L); // Sample order with ID 1L
         doThrow(IllegalStateException.class).when(orderService).addOrderDetails(order);
-        // Act
-        ResponseEntity<String> response = orderController.addOrderDetails(order);
 
         // Assert
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Order placed successfully but out of stock. We will notify you once it is in stock", response.getBody());
+        assertThrows(IllegalStateException.class, () -> orderController.addOrderDetails(order));
         verify(orderService, times(1)).addOrderDetails(order);
     }
+
+
 
     @Test
     void testUpdateOrderDetails_Successful() {
@@ -113,7 +112,7 @@ class OrderControllerTest {
         Mockito.doNothing().when(orderService).updateOrderDetails(order);
 
         // Act
-        ResponseEntity<String> response = orderController.updateOrderDetails(order);
+        ResponseEntity<String> response = orderController.updateOrderDetails(order.getOrderID(), order);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -127,12 +126,8 @@ class OrderControllerTest {
         Order order = createOrder(1L); // Sample order with ID 1L
         doThrow(IllegalStateException.class).when(orderService).updateOrderDetails(order);
 
-        // Act
-        ResponseEntity<String> response = orderController.updateOrderDetails(order);
-
         // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("Order placed successfully but out of stock. We will notify you once it is in stock", response.getBody());
+        assertThrows(IllegalStateException.class, () -> orderController.updateOrderDetails(order.getOrderID(), order));
         verify(orderService, times(1)).updateOrderDetails(order);
     }
 

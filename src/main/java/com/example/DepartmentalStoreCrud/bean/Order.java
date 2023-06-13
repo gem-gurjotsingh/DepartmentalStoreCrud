@@ -1,20 +1,19 @@
 package com.example.DepartmentalStoreCrud.bean;
 import javax.persistence.*;
-import lombok.AllArgsConstructor;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="Orders")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name="Orders")
+@SuppressFBWarnings(value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Order {
 
     @Id
-    //@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "orderID")
     private Long orderID;
 
@@ -37,4 +36,7 @@ public class Order {
 
     @Column(name="discountedPrice")
     private double discountedPrice;
+
+    @Column(name="totalPrice")
+    private double totalPrice;
 }

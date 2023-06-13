@@ -10,7 +10,7 @@ import java.util.NoSuchElementException;
 @ControllerAdvice
 public class OrderIdNotFound {
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<String> handleNoSuchElementException(NoSuchElementException ex) {
+    public ResponseEntity<String> handleNoSuchElementException() {
         return new ResponseEntity<>("No order with given id", HttpStatus.NOT_FOUND);
     }
 }

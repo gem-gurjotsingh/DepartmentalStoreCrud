@@ -1,22 +1,21 @@
 package com.example.DepartmentalStoreCrud.bean;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import lombok.Data;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "ProductInventory")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "ProductInventory")
+@SuppressFBWarnings(value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ProductInventory {
     @Id
-    //@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "productID")
     private Long productID;
 
@@ -30,7 +29,7 @@ public class ProductInventory {
     private double price;
 
     @Column(name = "expiry")
-    private Date expiry;
+    private LocalDate expiry;
 
     @Column(name = "count")
     private int count;

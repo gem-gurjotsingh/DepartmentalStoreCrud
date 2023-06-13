@@ -32,8 +32,7 @@ public class OrderService {
     @Autowired
     private BackorderRepository backorderRepo;
 
-    public List<Order> getAllOrders()
-    {
+    public List<Order> getAllOrders() {
         return orderRepo.findAll();
     }
 
@@ -41,7 +40,7 @@ public class OrderService {
         return orderRepo.findById(orderID).orElseThrow(NoSuchElementException::new);
     }
 
-    public void updateOtherEntities(Order order){
+    public void updateOtherEntities(Order order) {
         Customer customer = customerRepo.findById(order.getCustomer().getCustomerID()).orElse(null);
         ProductInventory productInventory = productInventoryRepo.findById(order.getProductInventory().getProductID()).orElse(null);
         order.setCustomer(customer);
@@ -52,6 +51,8 @@ public class OrderService {
         ProductInventory productInventory = order.getProductInventory();
         double discountedPrice = productInventory.getPrice() - productInventory.getPrice() * (order.getDiscount() / 100.0);
         order.setDiscountedPrice(discountedPrice);
+        double totalPrice = discountedPrice * (order.getQuantity());
+        order.setTotalPrice(totalPrice);
         if(order.getProductInventory().getCount() > 0 && order.getProductInventory().isAvailability()) {
             orderRepo.save(order);
             productInventory.setCount(productInventory.getCount() - order.getQuantity());
@@ -62,7 +63,7 @@ public class OrderService {
             // Create a backorder for the order
             Backorder backorder = new Backorder();
             backorder.setOrder(savedOrder);
-            backorderService.createBackorder(order.getOrderID(), backorder);
+            backorderService.createBackorder(backorder);
             throw new IllegalStateException("Order placed successfully but out of stock. We will notify you once it is in stock");
         }
     }
@@ -79,14 +80,16 @@ public class OrderService {
         checkProductAvail(order);
     }
 
+    //change test method also
     public void deleteOrderDetails(Long orderID, Order order) {
-        orderRepo.findById(orderID).orElseThrow(NoSuchElementException::new);
-        Backorder backorder = backorderRepo.findByOrder(order);
+        Order savedOrder = orderRepo.findById(orderID).orElseThrow(NoSuchElementException::new);
+        ProductInventory productInventory = savedOrder.getProductInventory();
+        productInventory.setCount(productInventory.getCount() + savedOrder.getQuantity());
 
+        Backorder backorder = backorderRepo.findByOrder(order);
         if (backorder != null) {
             backorderService.deleteBackorder(backorder.getBackorderID());
         }
-
         orderRepo.deleteById(orderID);
     }
 }

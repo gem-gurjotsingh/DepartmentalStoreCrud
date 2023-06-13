@@ -202,7 +202,6 @@ class OrderServiceTest {
         productInventory.setAvailability(true);
         productInventory.setPrice(100.0);
         order.setProductInventory(productInventory);
-
         return order;
     }
 }

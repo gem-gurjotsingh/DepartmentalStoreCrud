@@ -2,21 +2,20 @@ package com.example.DepartmentalStoreCrud.bean;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
-import lombok.AllArgsConstructor;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name="Customer")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name="Customer")
+@SuppressFBWarnings(value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Customer {
     @Id
-    //@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "customerID")
     private Long customerID;
 
@@ -28,6 +27,9 @@ public class Customer {
 
     @Column(name = "contactNumber")
     private String contactNumber;
+
+    @Column(name = "emailID")
+    private String emailID;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JsonIgnore
