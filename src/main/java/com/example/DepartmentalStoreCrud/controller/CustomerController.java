@@ -17,12 +17,27 @@ public class CustomerController {
     @Autowired
     private CustomerService customerService;
 
+    /**
+     * Retrieves all customers.
+     *
+     * @return List of customers.
+     */
     @Operation(operationId = "getAllCustomers", summary = "Get all Customers")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Customers fetched successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping
     public List<Customer> getAllCustomers() {
         return customerService.getAllCustomers();
     }
 
+    /**
+     * Adds customer details.
+     *
+     * @param customer The customer details to add.
+     * @return A response entity indicating the status of the operation.
+     */
     @Operation(operationId = "addCustomerDetails", summary = "Add Customer Details")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Customer added successfully"),
@@ -34,6 +49,13 @@ public class CustomerController {
         return ResponseEntity.ok("Customer added successfully.");
     }
 
+    /**
+     * Updates customer details by ID.
+     *
+     * @param customerID The ID of the customer to update.
+     * @param customer   The updated customer details.
+     * @return A response entity indicating the status of the operation.
+     */
     @Operation(operationId = "updateCustomer", summary = "Update Customer by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Customer updated successfully"),
@@ -46,6 +68,12 @@ public class CustomerController {
         return ResponseEntity.ok("Customer updated successfully.");
     }
 
+    /**
+     * Deletes a customer by ID.
+     *
+     * @param customerID The ID of the customer to delete.
+     * @return
+     */
     @Operation(operationId = "deleteCustomer", summary = "Delete Customer by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Customer deleted successfully"),

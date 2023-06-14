@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table(name="Orders")
+@Table(name = "Orders")
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Order {
 
@@ -34,9 +34,9 @@ public class Order {
     @Column(name = "discount")
     private double discount;
 
-    @Column(name="discountedPrice")
+    @Column(name = "discountedPrice")
     private double discountedPrice;
 
-    @Column(name="totalPrice")
+    @Column(name = "totalPrice")
     private double totalPrice;
 }

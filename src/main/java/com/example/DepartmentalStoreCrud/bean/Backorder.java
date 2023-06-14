@@ -1,5 +1,4 @@
 package com.example.DepartmentalStoreCrud.bean;
-
 import javax.persistence.*;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

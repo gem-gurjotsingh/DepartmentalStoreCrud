@@ -17,7 +17,12 @@ public class BackorderController {
     @Autowired
     private BackorderService backorderService;
 
-    // Create Backorder
+    /**
+     * Creates a new backorder.
+     *
+     * @param backorder The backorder to create.
+     * @return A response entity indicating the status of the operation.
+     */
     @Operation(operationId = "createBackorder", summary = "Create a new Backorder")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Backorder created successfully"),
@@ -29,15 +34,28 @@ public class BackorderController {
         return ResponseEntity.ok("Backorder created successfully.");
     }
 
-    // Get All Backorders
+    /**
+     * Retrieves all backorders.
+     *
+     * @return List of backorders.
+     */
     @Operation(operationId = "getAllBackorders", summary = "Get all Backorders")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Backorders fetched successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping
     public List<Backorder> getAllBackorders() {
         // Implementation
         return backorderService.getAllBackorders();
     }
 
-    // Get Backorder by ID
+    /**
+     * Retrieves a backorder by ID.
+     *
+     * @param backorderId The ID of the backorder to retrieve.
+     * @return A response entity containing the retrieved backorder.
+     */
     @Operation(operationId = "getBackorderByID", summary = "Get Backorder by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Backorder found"),
@@ -51,7 +69,12 @@ public class BackorderController {
         return ResponseEntity.ok(backorder);
     }
 
-    // Delete Backorder
+    /**
+     * Deletes a backorder by ID.
+     *
+     * @param backorderId The ID of the backorder to delete.
+     * @return A response entity indicating the status of the operation.
+     */
     @Operation(operationId = "deleteBackorder", summary = "Delete Backorder by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Backorder deleted successfully"),

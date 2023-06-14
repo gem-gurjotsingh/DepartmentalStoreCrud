@@ -11,7 +11,7 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name="Customer")
+@Table(name = "Customer")
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Customer {
     @Id

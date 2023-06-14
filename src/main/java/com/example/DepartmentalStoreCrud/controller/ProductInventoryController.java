@@ -18,12 +18,27 @@ public class ProductInventoryController {
     @Autowired
     private ProductInventoryService productInventoryService;
 
+    /**
+     * Retrieves all products.
+     *
+     * @return List of products.
+     */
     @Operation(operationId = "getAllProducts", summary = "Get all Products")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products fetched successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @GetMapping
     public List<ProductInventory> getAllProducts() {
         return productInventoryService.getAllProducts();
     }
 
+    /**
+     * Adds a new product.
+     *
+     * @param productInventory The product to add.
+     * @return A response entity indicating the status of the operation.
+     */
     @Operation(operationId = "addProductDetails", summary = "Add Product Details")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product added successfully"),
@@ -35,6 +50,12 @@ public class ProductInventoryController {
         return ResponseEntity.ok("Product added successfully.");
     }
 
+    /**
+     * Updates an existing product.
+     *
+     * @param productInventory The updated product.
+     * @return A response entity indicating the status of the operation.
+     */
     @Operation(operationId = "updateProductDetails", summary = "Update Product Details")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product updated successfully"),
@@ -47,6 +68,12 @@ public class ProductInventoryController {
         return ResponseEntity.ok("Product updated successfully.");
     }
 
+    /**
+     * Deletes a product by ID.
+     *
+     * @param productID The ID of the product to delete.
+     * @return A response entity indicating the status of the operation.
+     */
     @Operation(operationId = "deleteProduct", summary = "Delete Product by ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Product deleted successfully"),
