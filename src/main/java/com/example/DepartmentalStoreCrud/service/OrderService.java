@@ -80,7 +80,6 @@ public class OrderService {
         checkProductAvail(order);
     }
 
-    //change test method also
     public void deleteOrderDetails(Long orderID, Order order) {
         Order savedOrder = orderRepo.findById(orderID).orElseThrow(NoSuchElementException::new);
         ProductInventory productInventory = savedOrder.getProductInventory();
