@@ -62,7 +62,7 @@ public class CustomerController {
             @ApiResponse(responseCode = "404", description = "Customer not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PutMapping("/{customerId}")
+    @PutMapping("/{customerID}")
      public ResponseEntity<String> updateCustomerDetails(@PathVariable Long customerID, @RequestBody Customer customer) {
         customerService.updateCustomerDetails(customer);
         return ResponseEntity.ok("Customer updated successfully.");
@@ -72,7 +72,7 @@ public class CustomerController {
      * Deletes a customer by ID.
      *
      * @param customerID The ID of the customer to delete.
-     * @return
+     * @return A response entity indicating the status of the operation.
      */
     @Operation(operationId = "deleteCustomer", summary = "Delete Customer by ID")
     @ApiResponses(value = {
