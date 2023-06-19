@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.NoSuchElementException;
 
 @ControllerAdvice
-public class OrderIdNotFound {
+public class EntityIdNotFound {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<String> handleNoSuchElementException() {
-        return new ResponseEntity<>("No order with given id", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>("Does not exist with given id", HttpStatus.NOT_FOUND);
     }
 }

@@ -10,6 +10,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -73,10 +74,11 @@ class CustomerServiceTest {
     void testUpdateCustomerDetails_ValidEmail() {
         // Arrange
         Customer customer = createCustomer(1L); // Sample customer with ID 1L
+        when(customerRepository.findById(customer.getCustomerID())).thenReturn(Optional.of(customer));
         when(customerRepository.save(customer)).thenReturn(customer);
 
         // Act
-        customerService.updateCustomerDetails(customer);
+        customerService.updateCustomerDetails(customer.getCustomerID(),customer);
 
         // Assert
         verify(customerRepository, times(1)).save(customer);
@@ -87,10 +89,11 @@ class CustomerServiceTest {
         // Arrange
         Customer customer = createCustomer(1L); // Sample customer with ID 1L
         customer.setEmailID("invalid-email");
+        when(customerRepository.findById(customer.getCustomerID())).thenReturn(Optional.of(customer));
         when(customerRepository.save(customer)).thenReturn(customer);
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> customerService.updateCustomerDetails(customer));
+        assertThrows(IllegalArgumentException.class, () -> customerService.updateCustomerDetails(customer.getCustomerID(), customer));
         verify(customerRepository, never()).save(customer);
     }
 
@@ -98,6 +101,8 @@ class CustomerServiceTest {
     void testDeleteCustomerDetails() {
         // Arrange
         Long customerId = 1L;
+        Customer customer = createCustomer(customerId);
+        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
 
         // Act
         customerService.deleteCustomerDetails(customerId);

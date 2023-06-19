@@ -15,6 +15,11 @@
 	<description>Departmental store project for Spring Boot CRUD</description>
 	<properties>
 		<java.version>17</java.version>
+		<springdoc.version>1.6.11</springdoc.version>
+		<spotbugs.version>4.5.2</spotbugs.version>
+		<spotbug.plugin.version>4.5.2.0</spotbug.plugin.version>
+		<owasp.dependencycheck.version>7.4.4</owasp.dependencycheck.version>
+		<maven.checkstyle.version>3.1.2</maven.checkstyle.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -25,7 +30,7 @@
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-ui</artifactId>
-			<version>1.6.11</version>
+			<version>${springdoc.version}</version>
 		</dependency>
 
 		<dependency>
@@ -70,7 +75,7 @@
 		<dependency>
 			<groupId>com.github.spotbugs</groupId>
 			<artifactId>spotbugs-annotations</artifactId>
-			<version>4.5.2</version>
+			<version>${spotbugs.version}</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
@@ -85,7 +90,7 @@
 			<plugin>
 				<groupId>org.owasp</groupId>
 				<artifactId>dependency-check-maven</artifactId>
-				<version>7.4.4</version>
+				<version>${owasp.dependencycheck.version}</version>
 				<executions>
 					<execution>
 						<goals>
@@ -97,7 +102,7 @@
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
-				<version>4.5.2.0</version>
+				<version>${spotbug.plugin.version}</version>
 				<executions>
 					<execution>
 						<id>validate</id>
@@ -111,7 +116,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>3.1.2</version>
+				<version>${maven.checkstyle.version}</version>
 				<configuration>
 					<configLocation>checkstyle.xml</configLocation>
 				</configuration>

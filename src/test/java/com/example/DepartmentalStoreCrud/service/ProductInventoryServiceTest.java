@@ -1,5 +1,6 @@
 package com.example.DepartmentalStoreCrud.service;
 
+import com.example.DepartmentalStoreCrud.bean.Customer;
 import com.example.DepartmentalStoreCrud.bean.ProductInventory;
 import com.example.DepartmentalStoreCrud.repository.ProductInventoryRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,10 +62,11 @@ class ProductInventoryServiceTest {
     void testUpdateProductDetails() {
         // Arrange
         ProductInventory product = createProduct(1L); // Sample product with ID 1L
+        when(productInventoryRepository.findById(product.getProductID())).thenReturn(Optional.of(product));
         when(productInventoryRepository.save(product)).thenReturn(product);
 
         // Act
-        productInventoryService.updateProductDetails(product);
+        productInventoryService.updateProductDetails(product.getProductID(), product);
 
         // Assert
         verify(productInventoryRepository, times(1)).save(product);
@@ -74,7 +76,8 @@ class ProductInventoryServiceTest {
     void testDeleteProductDetails() {
         // Arrange
         Long productId = 1L;
-        doNothing().when(productInventoryRepository).deleteById(productId);
+        ProductInventory productInventory = createProduct(productId);
+        when(productInventoryRepository.findById(productId)).thenReturn(Optional.of(productInventory));
 
         // Act
         productInventoryService.deleteProductDetails(productId);

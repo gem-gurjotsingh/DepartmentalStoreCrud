@@ -3,6 +3,7 @@ package com.example.DepartmentalStoreCrud.controller;
 import com.example.DepartmentalStoreCrud.bean.Backorder;
 import com.example.DepartmentalStoreCrud.service.BackorderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.*;
@@ -25,13 +26,12 @@ public class BackorderController {
      */
     @Operation(operationId = "createBackorder", summary = "Create a new Backorder")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Backorder created successfully"),
+            @ApiResponse(responseCode = "201", description = "Backorder created successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping
     public ResponseEntity<String> createBackorder(@RequestBody Backorder backorder) {
-        // Implementation
-        return ResponseEntity.ok("Backorder created successfully.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("Backorder created successfully.");
     }
 
     /**

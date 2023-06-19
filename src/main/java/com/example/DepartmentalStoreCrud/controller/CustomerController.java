@@ -3,6 +3,7 @@ package com.example.DepartmentalStoreCrud.controller;
 import com.example.DepartmentalStoreCrud.bean.Customer;
 import com.example.DepartmentalStoreCrud.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.*;
@@ -33,6 +34,24 @@ public class CustomerController {
     }
 
     /**
+     * Retrieves a customer by ID.
+     *
+     * @param customerID The ID of the customer to retrieve.
+     * @return The customer with the specified ID.
+     */
+    @Operation(operationId = "getCustomerByID", summary = "Get Customer by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Customer found"),
+            @ApiResponse(responseCode = "404", description = "Customer not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/{customerID}")
+    public ResponseEntity<Customer> getCustomerById(@PathVariable Long customerID)
+    {
+        return ResponseEntity.ok(customerService.getCustomerById(customerID));
+    }
+
+    /**
      * Adds customer details.
      *
      * @param customer The customer details to add.
@@ -40,13 +59,13 @@ public class CustomerController {
      */
     @Operation(operationId = "addCustomerDetails", summary = "Add Customer Details")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Customer added successfully"),
+            @ApiResponse(responseCode = "201", description = "Customer added successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping
     public ResponseEntity<String> addCustomerDetails(@RequestBody Customer customer) {
         customerService.addCustomerDetails(customer);
-        return ResponseEntity.ok("Customer added successfully.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("Customer added successfully.");
     }
 
     /**
@@ -63,8 +82,8 @@ public class CustomerController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PutMapping("/{customerID}")
-     public ResponseEntity<String> updateCustomerDetails(@PathVariable Long customerID, @RequestBody Customer customer) {
-        customerService.updateCustomerDetails(customer);
+    public ResponseEntity<String> updateCustomerDetails(@PathVariable Long customerID, @RequestBody Customer customer) {
+        customerService.updateCustomerDetails(customerID, customer);
         return ResponseEntity.ok("Customer updated successfully.");
     }
 

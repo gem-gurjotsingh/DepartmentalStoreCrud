@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,6 +35,24 @@ public class ProductInventoryController {
     }
 
     /**
+     * Retrieves a product by ID.
+     *
+     * @param productID The ID of the product to retrieve.
+     * @return The product with the specified ID.
+     */
+    @Operation(operationId = "getProductByID", summary = "Get Product by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Product found"),
+            @ApiResponse(responseCode = "404", description = "Product not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/{productID}")
+    public ResponseEntity<ProductInventory> getProductById(@PathVariable Long productID)
+    {
+        return ResponseEntity.ok(productInventoryService.getProductById(productID));
+    }
+
+    /**
      * Adds a new product.
      *
      * @param productInventory The product to add.
@@ -41,13 +60,13 @@ public class ProductInventoryController {
      */
     @Operation(operationId = "addProductDetails", summary = "Add Product Details")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Product added successfully"),
+            @ApiResponse(responseCode = "201", description = "Product added successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping
     public ResponseEntity<String> addProductDetails(@RequestBody ProductInventory productInventory) {
         productInventoryService.addProductDetails(productInventory);
-        return ResponseEntity.ok("Product added successfully.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("Product added successfully.");
     }
 
     /**
@@ -63,8 +82,8 @@ public class ProductInventoryController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PutMapping("/{productID}")
-    public ResponseEntity<String> updateProductDetails(@RequestBody ProductInventory productInventory) {
-        productInventoryService.updateProductDetails(productInventory);
+    public ResponseEntity<String> updateProductDetails(@PathVariable Long productID, @RequestBody ProductInventory productInventory) {
+        productInventoryService.updateProductDetails(productID, productInventory);
         return ResponseEntity.ok("Product updated successfully.");
     }
 

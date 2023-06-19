@@ -3,6 +3,7 @@ package com.example.DepartmentalStoreCrud.controller;
 import com.example.DepartmentalStoreCrud.bean.Order;
 import com.example.DepartmentalStoreCrud.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,13 +59,13 @@ public class OrderController {
      */
     @Operation(operationId = "addOrderDetails", summary = "Add Order Details")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Order placed successfully"),
+            @ApiResponse(responseCode = "201", description = "Order placed successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping
     public ResponseEntity<String> addOrderDetails(@RequestBody Order order) {
         orderService.addOrderDetails(order);
-        return ResponseEntity.ok("Order placed successfully.");
+        return ResponseEntity.status(HttpStatus.CREATED).body("Order placed successfully.");
     }
 
     /**
