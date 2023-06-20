@@ -3,6 +3,7 @@ package com.example.DepartmentalStoreCrud.controller;
 import com.example.DepartmentalStoreCrud.bean.ProductInventory;
 import com.example.DepartmentalStoreCrud.service.ProductInventoryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +48,9 @@ public class ProductInventoryController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{productID}")
-    public ResponseEntity<ProductInventory> getProductById(@PathVariable Long productID)
-    {
+    public ResponseEntity<ProductInventory> getProductById(
+            @Parameter(description = "The ID of the product to retrieve.", required = true)
+            @PathVariable Long productID) {
         return ResponseEntity.ok(productInventoryService.getProductById(productID));
     }
 
@@ -64,7 +66,7 @@ public class ProductInventoryController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping
-    public ResponseEntity<String> addProductDetails(@RequestBody ProductInventory productInventory) {
+    public ResponseEntity<String> addProductDetails(@RequestBody(required = true) ProductInventory productInventory) {
         productInventoryService.addProductDetails(productInventory);
         return ResponseEntity.status(HttpStatus.CREATED).body("Product added successfully.");
     }
@@ -82,7 +84,9 @@ public class ProductInventoryController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PutMapping("/{productID}")
-    public ResponseEntity<String> updateProductDetails(@PathVariable Long productID, @RequestBody ProductInventory productInventory) {
+    public ResponseEntity<String> updateProductDetails(
+            @Parameter(description = "The ID of the product to update.", required = true)
+            @PathVariable Long productID, @RequestBody(required = true) ProductInventory productInventory) {
         productInventoryService.updateProductDetails(productID, productInventory);
         return ResponseEntity.ok("Product updated successfully.");
     }
@@ -100,7 +104,9 @@ public class ProductInventoryController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @DeleteMapping("/{productID}")
-    public ResponseEntity<String> deleteProductDetails(@PathVariable Long productID) {
+    public ResponseEntity<String> deleteProductDetails(
+            @Parameter(description = "The ID of the product to delete.", required = true)
+            @PathVariable Long productID) {
         productInventoryService.deleteProductDetails(productID);
         return ResponseEntity.ok("Product deleted successfully.");
     }

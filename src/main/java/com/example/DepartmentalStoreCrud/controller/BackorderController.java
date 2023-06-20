@@ -2,6 +2,7 @@ package com.example.DepartmentalStoreCrud.controller;
 
 import com.example.DepartmentalStoreCrud.bean.Backorder;
 import com.example.DepartmentalStoreCrud.service.BackorderService;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class BackorderController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping
-    public ResponseEntity<String> createBackorder(@RequestBody Backorder backorder) {
+    public ResponseEntity<String> createBackorder(@RequestBody(required = true) Backorder backorder) {
         return ResponseEntity.status(HttpStatus.CREATED).body("Backorder created successfully.");
     }
 
@@ -63,8 +64,9 @@ public class BackorderController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{backorderId}")
-    public ResponseEntity<Backorder> getBackorderById(@PathVariable Long backorderId) {
-        // Implementation
+    public ResponseEntity<Backorder> getBackorderById(
+            @Parameter(description = "The ID of the backorder to retrieve.", required = true)
+            @PathVariable Long backorderId) {
         Backorder backorder = backorderService.getBackorderById(backorderId);
         return ResponseEntity.ok(backorder);
     }
@@ -82,8 +84,9 @@ public class BackorderController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @DeleteMapping("/{backorderId}")
-    public ResponseEntity<String> deleteBackorder(@PathVariable Long backorderId) {
-        // Implementation
+    public ResponseEntity<String> deleteBackorder(
+            @Parameter(description = "The ID of the backorder to delete.", required = true)
+            @PathVariable Long backorderId) {
         backorderService.deleteBackorder(backorderId);
         return ResponseEntity.ok("Backorder deleted successfully.");
     }
