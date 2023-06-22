@@ -1,6 +1,8 @@
 package com.example.DepartmentalStoreCrud.service;
 import com.example.DepartmentalStoreCrud.bean.Customer;
+import com.example.DepartmentalStoreCrud.bean.Order;
 import com.example.DepartmentalStoreCrud.repository.CustomerRepository;
+import com.example.DepartmentalStoreCrud.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +14,9 @@ public class CustomerService {
     @Autowired
     private CustomerRepository customRepo;
 
+    @Autowired
+    private OrderRepository orderRepo;
+
     public List<Customer> getAllCustomers()
     {
         return customRepo.findAll();
@@ -19,6 +24,11 @@ public class CustomerService {
 
     public Customer getCustomerById(Long customerID) {
         return customRepo.findById(customerID).orElseThrow(NoSuchElementException::new);
+    }
+
+    public List<Order> getOrdersByCustomer(Long customerID) {
+        Customer customer = getCustomerById(customerID);
+        return orderRepo.findByCustomer_CustomerID(customerID);
     }
 
     private void validateEmail(String email) {
@@ -49,8 +59,7 @@ public class CustomerService {
     }
 
     public void deleteCustomerDetails(Long customerID) {
-        Customer customer = getCustomerById(customerID);
-        if(customer != null)
-        customRepo.deleteById(customerID);
+        if(getCustomerById(customerID) != null)
+            customRepo.deleteById(customerID);
     }
 }

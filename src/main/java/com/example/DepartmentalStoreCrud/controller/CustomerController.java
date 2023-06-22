@@ -1,13 +1,13 @@
 package com.example.DepartmentalStoreCrud.controller;
 
 import com.example.DepartmentalStoreCrud.bean.Customer;
+import com.example.DepartmentalStoreCrud.bean.Order;
 import com.example.DepartmentalStoreCrud.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.*;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.util.List;
@@ -51,6 +51,25 @@ public class CustomerController {
             @Parameter(description = "The ID of the customer to retrieve.", required = true)
             @PathVariable Long customerID) {
         return ResponseEntity.ok(customerService.getCustomerById(customerID));
+    }
+
+    /**
+     * Retrieves all orders placed by a customer.
+     *
+     * @param customerID The ID of the customer required.
+     * @return The orders placed by a customer.
+     */
+    @Operation(operationId = "getOrdersByCustomer", summary = "Get orders placed by a customer")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Orders found"),
+            @ApiResponse(responseCode = "404", description = "No orders found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/{customerID}/orders")
+    public ResponseEntity<List<Order>> getOrdersByCustomer(
+            @Parameter(description = "The ID of the customer required.", required = true)
+            @PathVariable Long customerID) {
+        return ResponseEntity.ok(customerService.getOrdersByCustomer(customerID));
     }
 
     /**

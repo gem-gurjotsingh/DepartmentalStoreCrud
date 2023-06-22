@@ -1,13 +1,17 @@
 package com.example.DepartmentalStoreCrud.service;
 
 import com.example.DepartmentalStoreCrud.bean.Customer;
+import com.example.DepartmentalStoreCrud.bean.Order;
+import com.example.DepartmentalStoreCrud.bean.ProductInventory;
 import com.example.DepartmentalStoreCrud.repository.CustomerRepository;
+import com.example.DepartmentalStoreCrud.repository.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -21,6 +25,9 @@ class CustomerServiceTest {
 
     @Mock
     private CustomerRepository customerRepository;
+
+    @Mock
+    private OrderRepository orderRepository;
 
     @InjectMocks
     private CustomerService customerService;
@@ -43,6 +50,52 @@ class CustomerServiceTest {
         // Assert
         assertEquals(1, result.size());
         verify(customerRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testGetCustomerById_ExistingCustomer() {
+        // Arrange
+        Long customerId = 1L;
+        Customer customer = createCustomer(customerId); // Sample order with ID 1L
+        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+        // Act
+        Customer result = customerService.getCustomerById(customerId);
+
+        // Assert
+        assertEquals(customer, result);
+        verify(customerRepository, times(1)).findById(customerId);
+    }
+
+    @Test
+    void testGetCustomerById_NonExistingCustomer() {
+        // Arrange
+        Long customerId = 1L;
+        when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
+
+        // Act
+        assertThrows(NoSuchElementException.class, () -> customerService.getCustomerById(customerId));
+        verify(customerRepository, times(1)).findById(customerId);
+    }
+
+    @Test
+    void testGetOrdersByCustomer() {
+        // Arrange
+        Long customerId = 1L;
+        Customer customer = createCustomer(customerId);
+        List<Order> orders = new ArrayList<>();
+        orders.add(createOrder(1L)); // Sample order with ID 1L and matching customer ID
+        when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+        when(orderRepository.findByCustomer_CustomerID(customerId)).thenReturn(orders);
+
+        // Act
+        List<Order> result = customerService.getOrdersByCustomer(customerId);
+
+        // Assert
+        assertEquals(1, result.size());
+        assertEquals(orders, result);
+        verify(customerRepository, times(1)).findById(customerId);
+        verify(orderRepository, times(1)).findByCustomer_CustomerID(customerId);
     }
 
     @Test
@@ -119,5 +172,28 @@ class CustomerServiceTest {
         customer.setContactNumber("123-456-7890");
         customer.setEmailID("johndoe@example.com");
         return customer;
+    }
+
+    private Order createOrder(Long orderId) {
+        Order order = new Order();
+        order.setOrderID(orderId);
+        order.setOrderTimestamp(LocalDateTime.now());
+        order.setQuantity(2);
+        order.setDiscount(10.0);
+        order.setDiscountedPrice(90.0);
+
+        Customer customer = new Customer();
+        customer.setCustomerID(1L);
+        customer.setFullName("John Doe");
+        order.setCustomer(customer);
+
+        ProductInventory productInventory = new ProductInventory();
+        productInventory.setProductID(1L);
+        productInventory.setProductName("Product 1");
+        productInventory.setCount(5);
+        productInventory.setAvailability(true);
+        productInventory.setPrice(100.0);
+        order.setProductInventory(productInventory);
+        return order;
     }
 }

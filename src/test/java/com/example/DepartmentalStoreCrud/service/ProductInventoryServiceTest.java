@@ -10,11 +10,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class ProductInventoryServiceTest {
@@ -43,6 +42,32 @@ class ProductInventoryServiceTest {
         // Assert
         assertEquals(1, result.size());
         verify(productInventoryRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testGetProductById_ExistingProduct() {
+        // Arrange
+        Long productId = 1L;
+        ProductInventory productInventory = createProduct(productId); // Sample order with ID 1L
+        when(productInventoryRepository.findById(productId)).thenReturn(Optional.of(productInventory));
+
+        // Act
+        ProductInventory result = productInventoryService.getProductById(productId);
+
+        // Assert
+        assertEquals(productInventory, result);
+        verify(productInventoryRepository, times(1)).findById(productId);
+    }
+
+    @Test
+    void testGetProductById_NonExistingProduct() {
+        // Arrange
+        Long productId = 1L;
+        when(productInventoryRepository.findById(productId)).thenReturn(Optional.empty());
+
+        // Act
+        assertThrows(NoSuchElementException.class, () -> productInventoryService.getProductById(productId));
+        verify(productInventoryRepository, times(1)).findById(productId);
     }
 
     @Test
@@ -92,7 +117,7 @@ class ProductInventoryServiceTest {
         product.setProductDesc("Product description");
         product.setProductName("Product name");
         product.setPrice(9.99); // Set the desired price
-        product.setExpiry(LocalDate.now().plusMonths(6)); // Set the desired expiry date
+        product.setExpiry(LocalDate.now()); // Set the desired expiry date
         product.setCount(10); // Set the desired count
         product.setAvailability(true); // Set the desired availability
 
