@@ -37,7 +37,8 @@ public class OrderService {
     }
 
     public Order getOrderById(Long orderID) {
-        return orderRepo.findById(orderID).orElseThrow(NoSuchElementException::new);
+        return orderRepo.findById(orderID)
+                .orElseThrow(() -> new NoSuchElementException("No order exists with ID: " + orderID));
     }
 
     public void updateOtherEntities(Order order) {
@@ -47,15 +48,19 @@ public class OrderService {
         order.setProductInventory(productInventory);
     }
 
+    public void applyDiscount(Order order){
+        ProductInventory productInventory = order.getProductInventory();
+        double totalPrice = order.getOrderQuantity() * productInventory.getPrice();
+        order.setTotalPrice(totalPrice);
+        double discountedPrice = order.getTotalPrice() - order.getTotalPrice() * (order.getDiscount() / 100.0);
+        order.setDiscountedPrice(discountedPrice);
+    }
+
     public void checkProductAvail(Order order){
         ProductInventory productInventory = order.getProductInventory();
-        double discountedPrice = productInventory.getPrice() - productInventory.getPrice() * (order.getDiscount() / 100.0);
-        order.setDiscountedPrice(discountedPrice);
-        double totalPrice = discountedPrice * (order.getQuantity());
-        order.setTotalPrice(totalPrice);
-        if(order.getProductInventory().getCount() > 0 && order.getProductInventory().isAvailability()) {
+        if(productInventory.getProductQuantity() > order.getOrderQuantity()) {
             orderRepo.save(order);
-            productInventory.setCount(productInventory.getCount() - order.getQuantity());
+            productInventory.setProductQuantity(productInventory.getProductQuantity() - order.getOrderQuantity());
             productInventoryRepo.save(productInventory);
         }
         else {
@@ -71,6 +76,7 @@ public class OrderService {
     public void addOrderDetails(Order order) {
         updateOtherEntities(order);
         orderRepo.save(order);
+        applyDiscount(order);
         checkProductAvail(order);
     }
 
@@ -80,14 +86,14 @@ public class OrderService {
         checkProductAvail(order);
     }
 
-    public void deleteOrderDetails(Long orderID, Order order) {
+    public void deleteOrderDetails(Long orderID) {
         Order savedOrder = getOrderById(orderID);
         ProductInventory productInventory = savedOrder.getProductInventory();
 
-        if(productInventory.getCount() > 0)
-        productInventory.setCount(productInventory.getCount() + savedOrder.getQuantity());
+        if(productInventory.getProductQuantity() > 0)
+        productInventory.setProductQuantity(productInventory.getProductQuantity() + savedOrder.getOrderQuantity());
 
-        Backorder backorder = backorderRepo.findByOrder(order);
+        Backorder backorder = backorderRepo.findByOrder(savedOrder);
         if (backorder != null) {
             backorderService.deleteBackorder(backorder.getBackorderID());
         }

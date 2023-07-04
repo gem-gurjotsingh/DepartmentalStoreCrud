@@ -5,7 +5,6 @@ import javax.persistence.*;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,16 +27,10 @@ public class ProductInventory {
     @Column(name = "price")
     private double price;
 
-    @Column(name = "expiry")
-    private LocalDate expiry;
+    @Column(name = "productQuantity")
+    private int productQuantity;
 
-    @Column(name = "count")
-    private int count;
-
-    @Column(name = "availability")
-    private boolean availability;
-
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnore
     @JoinColumn(name = "productID")
     private List<Order> orders = new ArrayList<>();

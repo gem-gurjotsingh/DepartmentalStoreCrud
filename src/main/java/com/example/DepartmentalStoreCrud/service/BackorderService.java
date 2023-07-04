@@ -19,7 +19,8 @@ public class BackorderService {
     }
 
     public Backorder getBackorderById(Long backorderId) {
-        return backorderRepository.findById(backorderId).orElseThrow(NoSuchElementException::new);
+        return backorderRepository.findById(backorderId)
+                .orElseThrow(() -> new NoSuchElementException("No backorder exists with ID: " + backorderId));
     }
 
     public void createBackorder(Backorder backorder) {

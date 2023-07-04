@@ -95,7 +95,6 @@ public class OrderController {
      * Deletes an order by ID.
      *
      * @param orderID The ID of the order to delete.
-     * @param order   The order to delete.
      * @return A response entity indicating the status of the operation.
      */
     @Operation(operationId = "deleteOrder", summary = "Delete Order by ID")
@@ -107,8 +106,8 @@ public class OrderController {
     @DeleteMapping("/{orderID}")
     public ResponseEntity<String> deleteOrderDetails(
             @Parameter(description = "The ID of the order to delete.", required = true)
-            @PathVariable Long orderID, @RequestBody(required = true) Order order) {
-        orderService.deleteOrderDetails(orderID, order);
+            @PathVariable Long orderID) {
+        orderService.deleteOrderDetails(orderID);
         return ResponseEntity.ok("Order deleted successfully.");
     }
 }

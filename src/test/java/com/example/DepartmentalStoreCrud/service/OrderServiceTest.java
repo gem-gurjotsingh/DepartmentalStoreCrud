@@ -173,7 +173,7 @@ class OrderServiceTest {
         when(backorderRepository.findByOrder(order)).thenReturn(backorder);
 
         // Act
-        orderService.deleteOrderDetails(orderId, order);
+        orderService.deleteOrderDetails(orderId);
 
         // Assert
         verify(orderRepository, times(1)).findById(orderId);

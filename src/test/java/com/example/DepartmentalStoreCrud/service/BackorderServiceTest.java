@@ -16,6 +16,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+
 public class BackorderServiceTest {
 
     @Mock
@@ -42,6 +43,7 @@ public class BackorderServiceTest {
 
         // Assert
         assertEquals(backorders, result);
+        assertEquals(backorders.size(), result.size());
         verify(backorderRepository, times(1)).findAll();
     }
 
@@ -58,6 +60,7 @@ public class BackorderServiceTest {
 
         // Assert
         assertEquals(backorder, result);
+        //ArgumentCaptor?
         verify(backorderRepository, times(1)).findById(backorderId);
     }
 

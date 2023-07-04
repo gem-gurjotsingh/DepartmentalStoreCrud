@@ -28,8 +28,8 @@ public class Order {
     @Column(name = "orderTimestamp")
     private LocalDateTime orderTimestamp;
 
-    @Column(name = "quantity")
-    private int quantity;
+    @Column(name = "orderQuantity")
+    private int orderQuantity;
 
     @Column(name = "discount")
     private double discount;

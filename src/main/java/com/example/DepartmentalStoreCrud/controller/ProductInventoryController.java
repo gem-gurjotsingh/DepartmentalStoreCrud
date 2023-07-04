@@ -7,10 +7,11 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -55,21 +56,27 @@ public class ProductInventoryController {
     }
 
     /**
-     * Adds a new product.
+     * Uploads an Excel file containing product details and saves the data to the database.
      *
-     * @param productInventory The product to add.
+     * @param file The Excel file to upload.
      * @return A response entity indicating the status of the operation.
      */
-    @Operation(operationId = "addProductDetails", summary = "Add Product Details")
+    @Operation(operationId = "addProductDetailsViaExcel", summary = "Add Product Details Via Excel")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Product added successfully"),
+            @ApiResponse(responseCode = "200", description = "Excel file uploaded to db"),
+            @ApiResponse(responseCode = "400", description = "Invalid file format"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping
-    public ResponseEntity<String> addProductDetails(@RequestBody(required = true) ProductInventory productInventory) {
-        productInventoryService.addProductDetails(productInventory);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Product added successfully.");
+    @PostMapping(value = "/upload", headers = "content-type=multipart/form-data")
+    public ResponseEntity<String> uploadProducts(@Parameter(description = "The Excel file to upload.", required = true)
+           @RequestParam("file") MultipartFile file) throws IOException {
+        productInventoryService.saveExcel(file);
+        return ResponseEntity.ok("File is uploaded and data is saved to db");
     }
+//    public ResponseEntity<String> addProductDetails(@RequestBody(required = true) ProductInventory productInventory) {
+//        productInventoryService.addProductDetails(productInventory);
+//        return ResponseEntity.status(HttpStatus.CREATED).body("Product added successfully.");
+//    }
 
     /**
      * Updates an existing product.
