@@ -155,7 +155,7 @@ public class ProductInventoryService {
         }
     }
 
-    @Scheduled(cron = "0 * * * * *")   // Run every minute
+    @Scheduled(cron = "0 0 0 * * *")   // Run every midnight
     public void deleteBackordersCronJob() {
         // Get all existing products
         List<ProductInventory> products = productRepo.findAll();
