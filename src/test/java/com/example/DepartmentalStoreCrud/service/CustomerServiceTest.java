@@ -178,7 +178,7 @@ class CustomerServiceTest {
         Order order = new Order();
         order.setOrderID(orderId);
         order.setOrderTimestamp(LocalDateTime.now());
-        order.setQuantity(2);
+        order.setOrderQuantity(2);
         order.setDiscount(10.0);
         order.setDiscountedPrice(90.0);
 
@@ -190,8 +190,7 @@ class CustomerServiceTest {
         ProductInventory productInventory = new ProductInventory();
         productInventory.setProductID(1L);
         productInventory.setProductName("Product 1");
-        productInventory.setCount(5);
-        productInventory.setAvailability(true);
+        productInventory.setProductQuantity(5);
         productInventory.setPrice(100.0);
         order.setProductInventory(productInventory);
         return order;

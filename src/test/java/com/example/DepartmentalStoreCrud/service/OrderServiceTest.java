@@ -112,7 +112,7 @@ class OrderServiceTest {
         // Arrange
         Order order = createOrder(1L); // Sample order with ID 1L
         ProductInventory productInventory = order.getProductInventory();
-        productInventory.setCount(0);
+        productInventory.setProductQuantity(0);
         when(orderRepository.save(order)).thenReturn(order);
         when(productInventoryRepository.findById(order.getProductInventory().getProductID())).thenReturn(Optional.of(order.getProductInventory()));
         when(customerRepository.findById(order.getCustomer().getCustomerID())).thenReturn(Optional.of(order.getCustomer()));
@@ -148,7 +148,7 @@ class OrderServiceTest {
         // Arrange
         Order order = createOrder(1L); // Sample order with ID 1L
         ProductInventory productInventory = order.getProductInventory();
-        productInventory.setCount(0);
+        productInventory.setProductQuantity(0);
         when(orderRepository.save(order)).thenReturn(order);
         when(productInventoryRepository.findById(order.getProductInventory().getProductID())).thenReturn(Optional.of(order.getProductInventory()));
         when(customerRepository.findById(order.getCustomer().getCustomerID())).thenReturn(Optional.of(order.getCustomer()));
@@ -186,7 +186,7 @@ class OrderServiceTest {
         Order order = new Order();
         order.setOrderID(orderId);
         order.setOrderTimestamp(LocalDateTime.now());
-        order.setQuantity(2);
+        order.setOrderQuantity(2);
         order.setDiscount(10.0);
         order.setDiscountedPrice(90.0);
 
@@ -198,8 +198,7 @@ class OrderServiceTest {
         ProductInventory productInventory = new ProductInventory();
         productInventory.setProductID(1L);
         productInventory.setProductName("Product 1");
-        productInventory.setCount(5);
-        productInventory.setAvailability(true);
+        productInventory.setProductQuantity(5);
         productInventory.setPrice(100.0);
         order.setProductInventory(productInventory);
         return order;

@@ -72,18 +72,15 @@ public class ProductInventoryService {
 
                     switch (cid) {
                         case 0:
-                            p.setProductID((long) cell.getNumericCellValue());
-                            break;
-                        case 1:
                             p.setProductName(cell.getStringCellValue());
                             break;
-                        case 2:
+                        case 1:
                             p.setProductDesc(cell.getStringCellValue());
                             break;
-                        case 3:
+                        case 2:
                             p.setPrice(cell.getNumericCellValue());
                             break;
-                        case 4:
+                        case 3:
                             p.setProductQuantity((int) cell.getNumericCellValue());
                             break;
                         default:
@@ -150,6 +147,7 @@ public class ProductInventoryService {
                             // Remove the backorder associated with the order
                             backorderRepo.delete(backorder);
                             existingProduct.setProductQuantity(existingProduct.getProductQuantity()-order.getOrderQuantity());
+                            productRepo.save(existingProduct);
                         }
                     }
                 }
@@ -165,7 +163,6 @@ public class ProductInventoryService {
         for (ProductInventory existingProduct : products) {
             int quantity = existingProduct.getProductQuantity();
             removeBackorders(quantity, existingProduct);
-            productRepo.save(existingProduct);
         }
     }
 

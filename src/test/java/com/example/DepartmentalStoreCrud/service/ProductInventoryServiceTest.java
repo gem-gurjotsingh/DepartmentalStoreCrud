@@ -1,6 +1,5 @@
 package com.example.DepartmentalStoreCrud.service;
 
-import com.example.DepartmentalStoreCrud.bean.Customer;
 import com.example.DepartmentalStoreCrud.bean.ProductInventory;
 import com.example.DepartmentalStoreCrud.repository.ProductInventoryRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,12 +7,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ProductInventoryServiceTest {
@@ -71,17 +71,61 @@ class ProductInventoryServiceTest {
     }
 
     @Test
-    void testAddProductDetails() {
+    void testCheckExcelFormat_ValidFormat() throws Exception {
         // Arrange
-        ProductInventory product = createProduct(1L); // Sample product with ID 1L
-        when(productInventoryRepository.save(product)).thenReturn(product);
+        MultipartFile file = createMockMultipartFile("validFile.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[]{});
 
         // Act
-        productInventoryService.addProductDetails(product);
+        boolean result = productInventoryService.checkExcelFormat(file);
 
         // Assert
-        verify(productInventoryRepository, times(1)).save(product);
+        assertTrue(result);
     }
+
+    @Test
+    void testCheckExcelFormat_InvalidFormat() throws Exception {
+        // Arrange
+        MultipartFile file = createMockMultipartFile("invalidFile.txt", "text/plain", new byte[]{});
+
+        // Act
+        boolean result = productInventoryService.checkExcelFormat(file);
+
+        // Assert
+        assertFalse(result);
+    }
+
+    @Test
+    void testSaveExcel_ValidFileFormat() throws Exception {
+        // Arrange
+        byte[] excelData = "productName,productDesc,price,productQuantity\nTestProduct,TestDescription,10.0,100".getBytes();
+        MultipartFile file = createMockMultipartFile("validFile.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelData);
+        InputStream inputStream = new ByteArrayInputStream(excelData); // Create input stream from byte array
+
+        // Create mock of ProductInventoryService
+        ProductInventoryService productInventoryServiceMock = mock(ProductInventoryService.class);
+
+        // Mock behavior of productInventoryRepository
+        when(productInventoryRepository.saveAll(any(List.class))).thenReturn(Collections.emptyList());
+
+        // Mock behavior of productInventoryService's convertExcelToListOfProduct method
+        when(productInventoryServiceMock.convertExcelToListOfProduct(any(InputStream.class))).thenReturn(Collections.emptyList());
+
+        // Act
+        productInventoryServiceMock.saveExcel(file);
+    }
+
+
+    @Test
+    void testSaveExcel_InvalidFileFormat() throws Exception {
+        // Arrange
+        byte[] excelData = "invalid,data".getBytes();
+        MultipartFile file = createMockMultipartFile("invalidFile.txt", "text/plain", excelData);
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> productInventoryService.saveExcel(file));
+        verify(productInventoryRepository, never()).saveAll(any(List.class));
+    }
+
 
     @Test
     void testUpdateProductDetails() {
@@ -98,6 +142,32 @@ class ProductInventoryServiceTest {
     }
 
     @Test
+    public void testDeleteBackordersCronJob() {
+        // Arrange
+        ProductInventory product1 = new ProductInventory();
+        product1.setProductID(1L);
+        product1.setProductName("Product 1");
+        product1.setProductQuantity(10);
+
+        ProductInventory product2 = new ProductInventory();
+        product2.setProductID(2L);
+        product2.setProductName("Product 2");
+        product2.setProductQuantity(5);
+
+        List<ProductInventory> products = Arrays.asList(product1, product2);
+
+        // Mocking the productRepo.findAll() method
+        when(productInventoryRepository.findAll()).thenReturn(products);
+
+        // Act
+        productInventoryService.deleteBackordersCronJob();
+
+        // Assert
+        verify(productInventoryRepository, times(1)).findAll();
+        verify(productInventoryRepository, times(2)).save(any(ProductInventory.class));
+    }
+
+        @Test
     void testDeleteProductDetails() {
         // Arrange
         Long productId = 1L;
@@ -117,11 +187,17 @@ class ProductInventoryServiceTest {
         product.setProductDesc("Product description");
         product.setProductName("Product name");
         product.setPrice(9.99); // Set the desired price
-        product.setExpiry(LocalDate.now()); // Set the desired expiry date
-        product.setCount(10); // Set the desired count
-        product.setAvailability(true); // Set the desired availability
+        product.setProductQuantity(10); // Set the desired count
 
         return product;
+    }
+
+    private MultipartFile createMockMultipartFile(String fileName, String contentType, byte[] excelData) throws Exception {
+        MultipartFile file = mock(MultipartFile.class);
+        doReturn(contentType).when(file).getContentType();
+        when(file.getOriginalFilename()).thenReturn(fileName);
+        when(file.getInputStream()).thenReturn(getClass().getResourceAsStream("/" + fileName));
+        return file;
     }
 
 }
