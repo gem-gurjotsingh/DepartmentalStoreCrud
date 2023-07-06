@@ -4,6 +4,7 @@ import com.example.DepartmentalStoreCrud.bean.Backorder;
 import com.example.DepartmentalStoreCrud.bean.Order;
 import com.example.DepartmentalStoreCrud.bean.ProductInventory;
 import com.example.DepartmentalStoreCrud.repository.BackorderRepository;
+import com.example.DepartmentalStoreCrud.repository.OrderRepository;
 import com.example.DepartmentalStoreCrud.repository.ProductInventoryRepository;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -29,6 +30,9 @@ public class ProductInventoryService {
 
     @Autowired
     private BackorderRepository backorderRepo;
+
+    @Autowired
+    private OrderRepository orderRepo;
 
     //check that file is of excel type or not
     public boolean checkExcelFormat(MultipartFile file) {
@@ -116,13 +120,6 @@ public class ProductInventoryService {
 //        productRepo.save(productInventory);
 //    }
 
-    private boolean isQuantitySufficient(Order order) {
-        int orderQuantity = order.getOrderQuantity();
-        ProductInventory productInventory = order.getProductInventory();
-        int availableQuantity = productInventory.getProductQuantity();
-        return availableQuantity >= orderQuantity;
-    }
-
     public void updateProductDetails(Long productID, ProductInventory productInventory) {
         ProductInventory existingProduct = getProductById(productID);
         if (existingProduct != null) {
@@ -137,29 +134,28 @@ public class ProductInventoryService {
 
     public void removeBackorders(int newQuantity, ProductInventory existingProduct) {
         if (newQuantity > 0) {
-            // Remove the backorder as quantity becomes sufficient
-            List<Order> orders = existingProduct.getOrders();
+            List<Order> orders = orderRepo.findByProductInventory(existingProduct);
             if (!orders.isEmpty()) {
                 for (Order order : orders) {
-                    if (isQuantitySufficient(order)) {
+                    // Remove the backorder if quantity becomes sufficient
+                    if(existingProduct.getProductQuantity() >= order.getOrderQuantity()) {
                         Backorder backorder = backorderRepo.findByOrder(order);
-                        if (backorder != null) {
-                            // Remove the backorder associated with the order
-                            backorderRepo.delete(backorder);
-                            existingProduct.setProductQuantity(existingProduct.getProductQuantity()-order.getOrderQuantity());
-                            productRepo.save(existingProduct);
+                        if (backorder!=null) {
+                                // Remove the backorder associated with the order
+                                backorderRepo.delete(backorder);
+                                existingProduct.setProductQuantity(existingProduct.getProductQuantity() - order.getOrderQuantity());
                         }
-                    }
                 }
             }
+            productRepo.save(existingProduct);
         }
+      }
     }
 
-    @Scheduled(cron = "0 0 0 * * *")   // Run every midnight
+    @Scheduled(cron = "0 0 * * * *")   // Runs every midnight
     public void deleteBackordersCronJob() {
         // Get all existing products
         List<ProductInventory> products = productRepo.findAll();
-
         for (ProductInventory existingProduct : products) {
             int quantity = existingProduct.getProductQuantity();
             removeBackorders(quantity, existingProduct);

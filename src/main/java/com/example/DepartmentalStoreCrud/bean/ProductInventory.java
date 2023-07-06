@@ -30,7 +30,7 @@ public class ProductInventory {
     @Column(name = "productQuantity")
     private int productQuantity;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany
     @JsonIgnore
     @JoinColumn(name = "productID")
     private List<Order> orders = new ArrayList<>();

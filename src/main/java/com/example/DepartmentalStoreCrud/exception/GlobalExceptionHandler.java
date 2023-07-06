@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class)
@@ -22,7 +23,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<String> handleOutOfStockException(IllegalStateException ex) {
-        return ResponseEntity.ok(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ex.getMessage());
     }
 
     @ExceptionHandler(IOException.class)
