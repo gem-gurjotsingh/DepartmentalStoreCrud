@@ -35,7 +35,7 @@ public class ProductInventoryService {
     private OrderRepository orderRepo;
 
     //check that file is of excel type or not
-    public final boolean checkExcelFormat(final MultipartFile file) {
+    private boolean checkExcelFormat(final MultipartFile file) {
 
         String contentType = file.getContentType();
 
@@ -46,7 +46,7 @@ public class ProductInventoryService {
     }
 
     //convert excel to list of products
-    public final List<ProductInventory> convertExcelToListOfProduct(final InputStream is) throws IOException {
+    private List<ProductInventory> convertExcelToListOfProducts(final InputStream is) throws IOException {
         List<ProductInventory> productList = new ArrayList<>();
             XSSFWorkbook workbook = new XSSFWorkbook(is);
 
@@ -95,9 +95,9 @@ public class ProductInventoryService {
         return productList;
     }
 
-    public final void saveExcel(final MultipartFile file) throws IOException {
+    public final void addProductsViaExcel(final MultipartFile file) throws IOException {
         if (checkExcelFormat(file)) {
-            List<ProductInventory> products = convertExcelToListOfProduct(file.getInputStream());
+            List<ProductInventory> products = convertExcelToListOfProducts(file.getInputStream());
             productRepo.saveAll(products);
         } else {
             throw new IllegalArgumentException("Invalid file format");
@@ -129,7 +129,7 @@ public class ProductInventoryService {
         }
     }
 
-    public final void removeBackorders(final int newQuantity, final ProductInventory existingProduct) {
+    private void removeBackorders(final int newQuantity, final ProductInventory existingProduct) {
         if (newQuantity > 0) {
             List<Order> orders = orderRepo.findByProductInventory(existingProduct);
             if (!orders.isEmpty()) {
@@ -150,7 +150,7 @@ public class ProductInventoryService {
     }
 
     @Scheduled(cron = "0 0 * * * *")   // Runs every midnight
-    public final void deleteBackordersCronJob() {
+    private void deleteBackordersCronJob() {
         // Get all existing products
         List<ProductInventory> products = productRepo.findAll();
         for (ProductInventory existingProduct : products) {

@@ -41,14 +41,14 @@ public class OrderService {
                 .orElseThrow(() -> new NoSuchElementException("No order exists with ID: " + orderID));
     }
 
-    public final void updateOtherEntities(final Order order) {
+    private void updateOtherEntities(final Order order) {
         Customer customer = customerRepo.findById(order.getCustomer().getCustomerID()).orElse(null);
         ProductInventory productInventory = productInventoryRepo.findById(order.getProductInventory().getProductID()).orElse(null);
         order.setCustomer(customer);
         order.setProductInventory(productInventory);
     }
 
-    public final void applyDiscount(final Order order) {
+    private void applyDiscount(final Order order) {
         ProductInventory productInventory = order.getProductInventory();
         double totalPrice = order.getOrderQuantity() * productInventory.getPrice();
         order.setTotalPrice(totalPrice);
@@ -56,7 +56,7 @@ public class OrderService {
         order.setDiscountedPrice(discountedPrice);
     }
 
-    public final void checkProductAvail(final Order order) {
+    private void checkProductAvail(final Order order) {
         ProductInventory productInventory = order.getProductInventory();
         if (productInventory.getProductQuantity() > order.getOrderQuantity()) {
             orderRepo.save(order);

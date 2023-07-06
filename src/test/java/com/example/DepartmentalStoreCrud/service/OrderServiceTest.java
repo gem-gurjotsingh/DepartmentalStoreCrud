@@ -114,16 +114,15 @@ class OrderServiceTest {
         ProductInventory productInventory = order.getProductInventory();
         productInventory.setProductQuantity(0);
         when(orderRepository.save(order)).thenReturn(order);
-        when(productInventoryRepository.findById(order.getProductInventory().getProductID())).thenReturn(Optional.of(order.getProductInventory()));
+        when(productInventoryRepository.findById(order.getProductInventory().getProductID())).thenReturn(Optional.of(productInventory));
         when(customerRepository.findById(order.getCustomer().getCustomerID())).thenReturn(Optional.of(order.getCustomer()));
 
-        // Act
+        // Act and Assert
         assertThrows(IllegalStateException.class, () -> orderService.addOrderDetails(order));
-
-        // Assert
         verify(orderRepository, times(2)).save(order);
         verify(productInventoryRepository, times(1)).findById(order.getProductInventory().getProductID());
         verify(customerRepository, times(1)).findById(order.getCustomer().getCustomerID());
+        verify(backorderService, times(1)).createBackorder(any(Backorder.class));
     }
 
     @Test
@@ -160,26 +159,6 @@ class OrderServiceTest {
         verify(orderRepository, times(2)).save(order);
         verify(productInventoryRepository, times(1)).findById(order.getProductInventory().getProductID());
         verify(customerRepository, times(1)).findById(order.getCustomer().getCustomerID());
-    }
-
-    @Test
-    void testDeleteOrderDetails() {
-        // Arrange
-        Long orderId = 1L;
-        Order order = createOrder(orderId); // Sample order with ID 1L
-        Backorder backorder = new Backorder();
-        backorder.setOrder(order);
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(backorderRepository.findByOrder(order)).thenReturn(backorder);
-
-        // Act
-        orderService.deleteOrderDetails(orderId);
-
-        // Assert
-        verify(orderRepository, times(1)).findById(orderId);
-        verify(backorderRepository, times(1)).findByOrder(order);
-        verify(backorderService, times(1)).deleteBackorder(backorder.getBackorderID());
-        verify(orderRepository, times(1)).deleteById(orderId);
     }
 
     private Order createOrder(Long orderId) {

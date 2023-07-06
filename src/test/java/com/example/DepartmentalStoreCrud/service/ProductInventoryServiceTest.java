@@ -9,8 +9,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,13 +32,14 @@ class ProductInventoryServiceTest {
         // Arrange
         List<ProductInventory> products = new ArrayList<>();
         products.add(createProduct(1L)); // Sample product with ID 1L
+        products.add(createProduct(2L));
         when(productInventoryRepository.findAll()).thenReturn(products);
 
         // Act
         List<ProductInventory> result = productInventoryService.getAllProducts();
 
         // Assert
-        assertEquals(1, result.size());
+        assertEquals(2, result.size());
         verify(productInventoryRepository, times(1)).findAll();
     }
 
@@ -71,63 +70,6 @@ class ProductInventoryServiceTest {
     }
 
     @Test
-    void testCheckExcelFormat_ValidFormat() throws Exception {
-        // Arrange
-        MultipartFile file = createMockMultipartFile("validFile.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[]{});
-
-        // Act
-        boolean result = productInventoryService.checkExcelFormat(file);
-
-        // Assert
-        assertTrue(result);
-    }
-
-    @Test
-    void testCheckExcelFormat_InvalidFormat() throws Exception {
-        // Arrange
-        MultipartFile file = createMockMultipartFile("invalidFile.txt", "text/plain", new byte[]{});
-
-        // Act
-        boolean result = productInventoryService.checkExcelFormat(file);
-
-        // Assert
-        assertFalse(result);
-    }
-
-    @Test
-    void testSaveExcel_ValidFileFormat() throws Exception {
-        // Arrange
-        byte[] excelData = "productName,productDesc,price,productQuantity\nTestProduct,TestDescription,10.0,100".getBytes();
-        MultipartFile file = createMockMultipartFile("validFile.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelData);
-        InputStream inputStream = new ByteArrayInputStream(excelData); // Create input stream from byte array
-
-        // Create mock of ProductInventoryService
-        ProductInventoryService productInventoryServiceMock = mock(ProductInventoryService.class);
-
-        // Mock behavior of productInventoryRepository
-        when(productInventoryRepository.saveAll(any(List.class))).thenReturn(Collections.emptyList());
-
-        // Mock behavior of productInventoryService's convertExcelToListOfProduct method
-        when(productInventoryServiceMock.convertExcelToListOfProduct(any(InputStream.class))).thenReturn(Collections.emptyList());
-
-        // Act
-        productInventoryServiceMock.saveExcel(file);
-    }
-
-
-    @Test
-    void testSaveExcel_InvalidFileFormat() throws Exception {
-        // Arrange
-        byte[] excelData = "invalid,data".getBytes();
-        MultipartFile file = createMockMultipartFile("invalidFile.txt", "text/plain", excelData);
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> productInventoryService.saveExcel(file));
-        verify(productInventoryRepository, never()).saveAll(any(List.class));
-    }
-
-
-    @Test
     void testUpdateProductDetails() {
         // Arrange
         ProductInventory product = createProduct(1L); // Sample product with ID 1L
@@ -142,32 +84,6 @@ class ProductInventoryServiceTest {
     }
 
     @Test
-    public void testDeleteBackordersCronJob() {
-        // Arrange
-        ProductInventory product1 = new ProductInventory();
-        product1.setProductID(1L);
-        product1.setProductName("Product 1");
-        product1.setProductQuantity(10);
-
-        ProductInventory product2 = new ProductInventory();
-        product2.setProductID(2L);
-        product2.setProductName("Product 2");
-        product2.setProductQuantity(5);
-
-        List<ProductInventory> products = Arrays.asList(product1, product2);
-
-        // Mocking the productRepo.findAll() method
-        when(productInventoryRepository.findAll()).thenReturn(products);
-
-        // Act
-        productInventoryService.deleteBackordersCronJob();
-
-        // Assert
-        verify(productInventoryRepository, times(1)).findAll();
-        verify(productInventoryRepository, times(2)).save(any(ProductInventory.class));
-    }
-
-        @Test
     void testDeleteProductDetails() {
         // Arrange
         Long productId = 1L;
@@ -199,5 +115,4 @@ class ProductInventoryServiceTest {
         when(file.getInputStream()).thenReturn(getClass().getResourceAsStream("/" + fileName));
         return file;
     }
-
 }

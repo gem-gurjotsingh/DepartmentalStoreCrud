@@ -76,9 +76,9 @@ public class ProductInventoryController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping(value = "/upload", headers = "content-type=multipart/form-data")
-    public ResponseEntity<String> uploadProducts(@Parameter(description = "The Excel file to upload.", required = true)
+    public ResponseEntity<String> uploadProductsViaExcel(@Parameter(description = "The Excel file to upload.", required = true)
            @RequestParam("file") final MultipartFile file) throws IOException {
-        productInventoryService.saveExcel(file);
+        productInventoryService.addProductsViaExcel(file);
         return ResponseEntity.ok("Products added to database");
     }
 //    public ResponseEntity<String> addProductDetails(@RequestBody(required = true) ProductInventory productInventory) {
