@@ -3,13 +3,22 @@ package com.example.DepartmentalStoreCrud.controller;
 import com.example.DepartmentalStoreCrud.bean.Customer;
 import com.example.DepartmentalStoreCrud.bean.Order;
 import com.example.DepartmentalStoreCrud.service.CustomerService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import io.swagger.v3.oas.annotations.*;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
@@ -49,7 +58,7 @@ public class CustomerController {
     @GetMapping("/{customerID}")
     public ResponseEntity<Customer> getCustomerById(
             @Parameter(description = "The ID of the customer to retrieve.", required = true)
-            @PathVariable Long customerID) {
+            @PathVariable final Long customerID) {
         return ResponseEntity.ok(customerService.getCustomerById(customerID));
     }
 
@@ -68,7 +77,7 @@ public class CustomerController {
     @GetMapping("/{customerID}/orders")
     public ResponseEntity<List<Order>> getOrdersByCustomer(
             @Parameter(description = "The ID of the customer required.", required = true)
-            @PathVariable Long customerID) {
+            @PathVariable final Long customerID) {
         return ResponseEntity.ok(customerService.getOrdersByCustomer(customerID));
     }
 
@@ -85,7 +94,7 @@ public class CustomerController {
     })
     @PostMapping
     public ResponseEntity<String> addCustomerDetails(
-            @RequestBody(required = true) Customer customer) {
+            @RequestBody(required = true) final Customer customer) {
         customerService.addCustomerDetails(customer);
         return ResponseEntity.status(HttpStatus.CREATED).body("Customer added successfully.");
     }
@@ -106,8 +115,8 @@ public class CustomerController {
     @PutMapping("/{customerID}")
     public ResponseEntity<String> updateCustomerDetails(
             @Parameter(description = "The ID of the customer to update.", required = true)
-            @PathVariable Long customerID,
-            @RequestBody(required = true) Customer customer) {
+            @PathVariable final Long customerID,
+            @RequestBody(required = true) final Customer customer) {
         customerService.updateCustomerDetails(customerID, customer);
         return ResponseEntity.ok("Customer updated successfully.");
     }
@@ -127,7 +136,7 @@ public class CustomerController {
     @DeleteMapping("/{customerID}")
     public ResponseEntity<String> deleteCustomerDetails(
             @Parameter(description = "The ID of the customer to delete.", required = true)
-            @PathVariable Long customerID) {
+            @PathVariable final Long customerID) {
         customerService.deleteCustomerDetails(customerID);
         return ResponseEntity.ok("Customer deleted successfully.");
     }

@@ -7,7 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.NoSuchElementException;
+import java.util.List;
 
 @Service
 public class CustomerService {
@@ -24,42 +25,41 @@ public class CustomerService {
     @Autowired
     private OrderRepository orderRepo;
 
-    public List<Customer> getAllCustomers()
-    {
+    public final List<Customer> getAllCustomers() {
         return customRepo.findAll();
     }
 
-    public Customer getCustomerById(Long customerID) {
+    public final Customer getCustomerById(final Long customerID) {
         return customRepo.findById(customerID)
                 .orElseThrow(() -> new NoSuchElementException("No customer exists with ID: " + customerID));
     }
 
-    public List<Order> getOrdersByCustomer(Long customerID) {
+    public final List<Order> getOrdersByCustomer(final Long customerID) {
         Customer customer = getCustomerById(customerID);
         return orderRepo.findByCustomer_CustomerID(customerID);
     }
 
-    private void validateContact(String contact){
-        if(!contact.matches(contactRegexp)) {
+    private void validateContact(final String contact) {
+        if (!contact.matches(contactRegexp)) {
             throw new IllegalArgumentException("Invalid country code or contact number");
         }
     }
 
-    private void validateEmail(String email) {
+    private void validateEmail(final String email) {
         if (!email.matches(emailRegexp)) {
             throw new IllegalArgumentException("Invalid email");
         }
     }
 
-    public void addCustomerDetails(Customer customer) {
+    public final void addCustomerDetails(final Customer customer) {
         validateContact(customer.getContactNumber());
         validateEmail(customer.getEmailID());
         customRepo.save(customer);
     }
 
-    public void updateCustomerDetails(Long customerID, Customer customer) {
+    public final void updateCustomerDetails(final Long customerID, final Customer customer) {
         Customer existingCustomer = getCustomerById(customerID);
-        if(existingCustomer!=null) {
+        if (existingCustomer != null) {
             existingCustomer.setCustomerID(customerID);
             existingCustomer.setFullName(customer.getFullName());
             existingCustomer.setAddress(customer.getAddress());
@@ -71,8 +71,9 @@ public class CustomerService {
         customRepo.save(existingCustomer);
     }
 
-    public void deleteCustomerDetails(Long customerID) {
-        if(getCustomerById(customerID) != null)
+    public final void deleteCustomerDetails(final Long customerID) {
+        if (getCustomerById(customerID) != null) {
             customRepo.deleteById(customerID);
+        }
     }
 }

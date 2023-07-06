@@ -6,9 +6,17 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -51,7 +59,7 @@ public class ProductInventoryController {
     @GetMapping("/{productID}")
     public ResponseEntity<ProductInventory> getProductById(
             @Parameter(description = "The ID of the product to retrieve.", required = true)
-            @PathVariable Long productID) {
+            @PathVariable final Long productID) {
         return ResponseEntity.ok(productInventoryService.getProductById(productID));
     }
 
@@ -69,9 +77,9 @@ public class ProductInventoryController {
     })
     @PostMapping(value = "/upload", headers = "content-type=multipart/form-data")
     public ResponseEntity<String> uploadProducts(@Parameter(description = "The Excel file to upload.", required = true)
-           @RequestParam("file") MultipartFile file) throws IOException {
+           @RequestParam("file") final MultipartFile file) throws IOException {
         productInventoryService.saveExcel(file);
-        return ResponseEntity.ok("File is uploaded and data is saved to db");
+        return ResponseEntity.ok("Products added to database");
     }
 //    public ResponseEntity<String> addProductDetails(@RequestBody(required = true) ProductInventory productInventory) {
 //        productInventoryService.addProductDetails(productInventory);
@@ -93,7 +101,7 @@ public class ProductInventoryController {
     @PutMapping("/{productID}")
     public ResponseEntity<String> updateProductDetails(
             @Parameter(description = "The ID of the product to update.", required = true)
-            @PathVariable Long productID, @RequestBody(required = true) ProductInventory productInventory) {
+            @PathVariable final Long productID, @RequestBody(required = true) final ProductInventory productInventory) {
         productInventoryService.updateProductDetails(productID, productInventory);
         return ResponseEntity.ok("Product updated successfully.");
     }
@@ -113,7 +121,7 @@ public class ProductInventoryController {
     @DeleteMapping("/{productID}")
     public ResponseEntity<String> deleteProductDetails(
             @Parameter(description = "The ID of the product to delete.", required = true)
-            @PathVariable Long productID) {
+            @PathVariable final Long productID) {
         productInventoryService.deleteProductDetails(productID);
         return ResponseEntity.ok("Product deleted successfully.");
     }

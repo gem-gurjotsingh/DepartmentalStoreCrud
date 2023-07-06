@@ -32,23 +32,23 @@ public class OrderService {
     @Autowired
     private BackorderRepository backorderRepo;
 
-    public List<Order> getAllOrders() {
+    public final List<Order> getAllOrders() {
         return orderRepo.findAll();
     }
 
-    public Order getOrderById(Long orderID) {
+    public final Order getOrderById(final Long orderID) {
         return orderRepo.findById(orderID)
                 .orElseThrow(() -> new NoSuchElementException("No order exists with ID: " + orderID));
     }
 
-    public void updateOtherEntities(Order order) {
+    public final void updateOtherEntities(final Order order) {
         Customer customer = customerRepo.findById(order.getCustomer().getCustomerID()).orElse(null);
         ProductInventory productInventory = productInventoryRepo.findById(order.getProductInventory().getProductID()).orElse(null);
         order.setCustomer(customer);
         order.setProductInventory(productInventory);
     }
 
-    public void applyDiscount(Order order){
+    public final void applyDiscount(final Order order) {
         ProductInventory productInventory = order.getProductInventory();
         double totalPrice = order.getOrderQuantity() * productInventory.getPrice();
         order.setTotalPrice(totalPrice);
@@ -56,14 +56,13 @@ public class OrderService {
         order.setDiscountedPrice(discountedPrice);
     }
 
-    public void checkProductAvail(Order order){
+    public final void checkProductAvail(final Order order) {
         ProductInventory productInventory = order.getProductInventory();
-        if(productInventory.getProductQuantity() > order.getOrderQuantity()) {
+        if (productInventory.getProductQuantity() > order.getOrderQuantity()) {
             orderRepo.save(order);
             productInventory.setProductQuantity(productInventory.getProductQuantity() - order.getOrderQuantity());
             productInventoryRepo.save(productInventory);
-        }
-        else {
+        } else {
             Order savedOrder = orderRepo.save(order);
             // Create a backorder for the order
             Backorder backorder = new Backorder();
@@ -73,29 +72,28 @@ public class OrderService {
         }
     }
 
-    public void addOrderDetails(Order order) {
+    public final void addOrderDetails(final Order order) {
         updateOtherEntities(order);
         orderRepo.save(order);
         applyDiscount(order);
         checkProductAvail(order);
     }
 
-    public void updateOrderDetails(Order order) {
+    public final void updateOrderDetails(final Order order) {
         updateOtherEntities(order);
         orderRepo.save(order);
         checkProductAvail(order);
     }
 
-    public void deleteOrderDetails(Long orderID) {
+    public final void deleteOrderDetails(final Long orderID) {
         Order savedOrder = getOrderById(orderID);
         ProductInventory productInventory = savedOrder.getProductInventory();
-
-        if(productInventory.getProductQuantity() > 0)
-        productInventory.setProductQuantity(productInventory.getProductQuantity() + savedOrder.getOrderQuantity());
 
         Backorder backorder = backorderRepo.findByOrder(savedOrder);
         if (backorder != null) {
             backorderService.deleteBackorder(backorder.getBackorderID());
+        } else {
+            productInventory.setProductQuantity(productInventory.getProductQuantity() + savedOrder.getOrderQuantity());
         }
         orderRepo.deleteById(orderID);
     }

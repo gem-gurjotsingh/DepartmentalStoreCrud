@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 public class DepartmentalStoreCrudApplication {
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 		SpringApplication.run(DepartmentalStoreCrudApplication.class, args);
 	}
 }

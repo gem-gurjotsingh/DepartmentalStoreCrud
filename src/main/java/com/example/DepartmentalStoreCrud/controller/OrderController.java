@@ -6,10 +6,17 @@ import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
@@ -49,7 +56,7 @@ public class OrderController {
     @GetMapping("/{orderID}")
     public ResponseEntity<Order> getOrderById(
             @Parameter(description = "The ID of the order to retrieve.", required = true)
-            @PathVariable Long orderID) {
+            @PathVariable final Long orderID) {
         return ResponseEntity.ok(orderService.getOrderById(orderID));
     }
 
@@ -65,7 +72,7 @@ public class OrderController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @PostMapping
-    public ResponseEntity<String> addOrderDetails(@RequestBody(required = true) Order order) {
+    public ResponseEntity<String> addOrderDetails(@RequestBody(required = true) final Order order) {
         orderService.addOrderDetails(order);
         return ResponseEntity.status(HttpStatus.CREATED).body("Order placed successfully.");
     }
@@ -86,7 +93,7 @@ public class OrderController {
     @PutMapping("/{orderID}")
     public ResponseEntity<String> updateOrderDetails(
             @Parameter(description = "The ID of the order to update.", required = true)
-            @PathVariable Long orderID, @RequestBody(required = true) Order order) {
+            @PathVariable final Long orderID, @RequestBody(required = true) final Order order) {
             orderService.updateOrderDetails(order);
             return ResponseEntity.ok("Order updated successfully.");
     }
@@ -106,7 +113,7 @@ public class OrderController {
     @DeleteMapping("/{orderID}")
     public ResponseEntity<String> deleteOrderDetails(
             @Parameter(description = "The ID of the order to delete.", required = true)
-            @PathVariable Long orderID) {
+            @PathVariable final Long orderID) {
         orderService.deleteOrderDetails(orderID);
         return ResponseEntity.ok("Order deleted successfully.");
     }

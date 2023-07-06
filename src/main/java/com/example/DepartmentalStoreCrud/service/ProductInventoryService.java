@@ -35,20 +35,18 @@ public class ProductInventoryService {
     private OrderRepository orderRepo;
 
     //check that file is of excel type or not
-    public boolean checkExcelFormat(MultipartFile file) {
+    public final boolean checkExcelFormat(final MultipartFile file) {
 
         String contentType = file.getContentType();
 
         if (contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
             return true;
         }
-        else {
-            return false;
-        }
+        return false;
     }
 
     //convert excel to list of products
-    public List<ProductInventory> convertExcelToListOfProduct(InputStream is) throws IOException {
+    public final List<ProductInventory> convertExcelToListOfProduct(final InputStream is) throws IOException {
         List<ProductInventory> productList = new ArrayList<>();
             XSSFWorkbook workbook = new XSSFWorkbook(is);
 
@@ -97,21 +95,20 @@ public class ProductInventoryService {
         return productList;
     }
 
-    public void saveExcel(MultipartFile file) throws IOException {
-        if (checkExcelFormat(file)){
+    public final void saveExcel(final MultipartFile file) throws IOException {
+        if (checkExcelFormat(file)) {
             List<ProductInventory> products = convertExcelToListOfProduct(file.getInputStream());
             productRepo.saveAll(products);
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("Invalid file format");
         }
     }
 
-    public List<ProductInventory> getAllProducts() {
+    public final List<ProductInventory> getAllProducts() {
         return productRepo.findAll();
     }
 
-    public ProductInventory getProductById(Long productID) {
+    public final ProductInventory getProductById(final Long productID) {
         return productRepo.findById(productID)
                 .orElseThrow(() -> new NoSuchElementException("No product exists with ID: " + productID));
     }
@@ -120,7 +117,7 @@ public class ProductInventoryService {
 //        productRepo.save(productInventory);
 //    }
 
-    public void updateProductDetails(Long productID, ProductInventory productInventory) {
+    public final void updateProductDetails(final Long productID, final ProductInventory productInventory) {
         ProductInventory existingProduct = getProductById(productID);
         if (existingProduct != null) {
             existingProduct.setProductID(productID);
@@ -132,15 +129,15 @@ public class ProductInventoryService {
         }
     }
 
-    public void removeBackorders(int newQuantity, ProductInventory existingProduct) {
+    public final void removeBackorders(final int newQuantity, final ProductInventory existingProduct) {
         if (newQuantity > 0) {
             List<Order> orders = orderRepo.findByProductInventory(existingProduct);
             if (!orders.isEmpty()) {
                 for (Order order : orders) {
                     // Remove the backorder if quantity becomes sufficient
-                    if(existingProduct.getProductQuantity() >= order.getOrderQuantity()) {
+                    if (existingProduct.getProductQuantity() >= order.getOrderQuantity()) {
                         Backorder backorder = backorderRepo.findByOrder(order);
-                        if (backorder!=null) {
+                        if (backorder != null) {
                                 // Remove the backorder associated with the order
                                 backorderRepo.delete(backorder);
                                 existingProduct.setProductQuantity(existingProduct.getProductQuantity() - order.getOrderQuantity());
@@ -153,7 +150,7 @@ public class ProductInventoryService {
     }
 
     @Scheduled(cron = "0 0 * * * *")   // Runs every midnight
-    public void deleteBackordersCronJob() {
+    public final void deleteBackordersCronJob() {
         // Get all existing products
         List<ProductInventory> products = productRepo.findAll();
         for (ProductInventory existingProduct : products) {
@@ -162,8 +159,9 @@ public class ProductInventoryService {
         }
     }
 
-    public void deleteProductDetails(Long productID) {
-        if(getProductById(productID) != null)
-        productRepo.deleteById(productID);
+    public final void deleteProductDetails(final Long productID) {
+        if (getProductById(productID) != null) {
+            productRepo.deleteById(productID);
+        }
     }
 }
