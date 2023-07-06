@@ -35,8 +35,10 @@ public class CustomerService {
     }
 
     public final List<Order> getOrdersByCustomer(final Long customerID) {
-        Customer customer = getCustomerById(customerID);
-        return orderRepo.findByCustomer_CustomerID(customerID);
+        if (getCustomerById(customerID) != null) {
+            return orderRepo.findByCustomer_CustomerID(customerID);
+        }
+        return null;
     }
 
     private void validateContact(final String contact) {
@@ -65,6 +67,8 @@ public class CustomerService {
             existingCustomer.setAddress(customer.getAddress());
             existingCustomer.setContactNumber(customer.getContactNumber());
             existingCustomer.setEmailID(customer.getEmailID());
+        } else {
+            throw new NoSuchElementException("No customer exists with ID: " + customerID);
         }
         validateContact(existingCustomer.getContactNumber());
         validateEmail(existingCustomer.getEmailID());

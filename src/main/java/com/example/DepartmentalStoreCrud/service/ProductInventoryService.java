@@ -39,7 +39,7 @@ public class ProductInventoryService {
 
         String contentType = file.getContentType();
 
-        if (contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+        if (contentType != null && contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
             return true;
         }
         return false;
@@ -149,7 +149,7 @@ public class ProductInventoryService {
       }
     }
 
-    @Scheduled(cron = "0 0 * * * *")   // Runs every midnight
+    @Scheduled(cron = "0 * * * * *")   // Runs every midnight
     public final void deleteBackordersCronJob() {
         // Get all existing products
         List<ProductInventory> products = productRepo.findAll();
