@@ -41,11 +41,16 @@ public class OrderService {
                 .orElseThrow(() -> new NoSuchElementException("No order exists with ID: " + orderID));
     }
 
-    private void updateOtherEntities(final Order order) {
-        Customer customer = customerRepo.findById(order.getCustomer().getCustomerID()).orElse(null);
-        ProductInventory productInventory = productInventoryRepo.findById(order.getProductInventory().getProductID()).orElse(null);
+    private void fetchOtherEntities(final Order order) {
+        Long customerID = order.getCustomer().getCustomerID();
+        Long productID = order.getProductInventory().getProductID();
+        Customer customer = customerRepo.findById(customerID)
+                .orElseThrow(() -> new NoSuchElementException("No customer exists with ID: " + order.getCustomer().getCustomerID()));
+        ProductInventory productInventory = productInventoryRepo.findById(productID)
+                .orElseThrow(() -> new NoSuchElementException("No product exists with ID: " + order.getProductInventory().getProductID()));
         order.setCustomer(customer);
         order.setProductInventory(productInventory);
+        orderRepo.save(order);
     }
 
     private void applyDiscount(final Order order) {
@@ -56,9 +61,9 @@ public class OrderService {
         order.setDiscountedPrice(discountedPrice);
     }
 
-    private void checkProductAvail(final Order order) {
+    private void checkIfBackorder(final Order order) {
         ProductInventory productInventory = order.getProductInventory();
-        if (productInventory.getProductQuantity() > order.getOrderQuantity()) {
+        if (productInventory.getProductQuantity() >= order.getOrderQuantity()) {
             orderRepo.save(order);
             productInventory.setProductQuantity(productInventory.getProductQuantity() - order.getOrderQuantity());
             productInventoryRepo.save(productInventory);
@@ -68,21 +73,19 @@ public class OrderService {
             Backorder backorder = new Backorder();
             backorder.setOrder(savedOrder);
             backorderService.createBackorder(backorder);
-            throw new IllegalStateException("Order placed successfully but out of stock. We will notify you once it is in stock");
+            throw new IllegalStateException("Order placed successfully as a backorder");
         }
     }
 
     public final void addOrderDetails(final Order order) {
-        updateOtherEntities(order);
-        orderRepo.save(order);
+        fetchOtherEntities(order);
         applyDiscount(order);
-        checkProductAvail(order);
+        checkIfBackorder(order);
     }
 
     public final void updateOrderDetails(final Order order) {
-        updateOtherEntities(order);
-        orderRepo.save(order);
-        checkProductAvail(order);
+        fetchOtherEntities(order);
+        checkIfBackorder(order);
     }
 
     public final void deleteOrderDetails(final Long orderID) {

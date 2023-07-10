@@ -4,6 +4,7 @@ import com.example.DepartmentalStoreCrud.bean.Backorder;
 import com.example.DepartmentalStoreCrud.repository.BackorderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -54,13 +55,16 @@ public class BackorderServiceTest {
         backorder.setBackorderID(backorderId);
         when(backorderRepository.findById(backorderId)).thenReturn(Optional.of(backorder));
 
+        //Argument captor
+        ArgumentCaptor<Long> backorderIdCaptor = ArgumentCaptor.forClass(Long.class);
+
         // Act
         Backorder result = backorderService.getBackorderById(backorderId);
 
         // Assert
         assertEquals(backorder, result);
-        //ArgumentCaptor?
-        verify(backorderRepository, times(1)).findById(backorderId);
+        verify(backorderRepository, times(1)).findById(backorderIdCaptor.capture());
+        assertEquals(backorderId, backorderIdCaptor.getValue());
     }
 
     @Test
@@ -79,22 +83,45 @@ public class BackorderServiceTest {
         // Arrange
         Backorder backorder = new Backorder();
 
+        // Argument captor
+        ArgumentCaptor<Backorder> backorderCaptor = ArgumentCaptor.forClass(Backorder.class);
+
         // Act
         backorderService.createBackorder(backorder);
 
         // Assert
-        verify(backorderRepository, times(1)).save(backorder);
+        verify(backorderRepository, times(1)).save(backorderCaptor.capture());
+        assertEquals(backorder, backorderCaptor.getValue());
     }
 
     @Test
     public void testDeleteBackorder() {
         // Arrange
         Long backorderId = 1L;
+        Backorder backorder = new Backorder();
+        when(backorderRepository.findById(backorderId)).thenReturn(Optional.of(backorder));
+
+        //Argument captor
+        ArgumentCaptor<Long> backorderIdCaptor = ArgumentCaptor.forClass(Long.class);
 
         // Act
         backorderService.deleteBackorder(backorderId);
 
         // Assert
-        verify(backorderRepository, times(1)).deleteById(backorderId);
+        verify(backorderRepository, times(1)).deleteById(backorderIdCaptor.capture());
+        assertEquals(backorderId, backorderIdCaptor.getValue());
+    }
+
+    @Test
+    public void testDeleteBackorder_NonExisting() {
+        Long backorderId = 3L;
+        when(backorderRepository.findById(backorderId)).thenReturn(Optional.empty());
+
+        // Act
+        assertThrows(NoSuchElementException.class, () -> backorderService.deleteBackorder(backorderId));
+
+        // Assert
+        verify(backorderRepository, times(1)).findById(backorderId);
+        verify(backorderRepository, never()).delete(any());
     }
 }

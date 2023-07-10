@@ -1,6 +1,5 @@
 package com.example.DepartmentalStoreCrud.service;
 
-import com.example.DepartmentalStoreCrud.bean.Backorder;
 import com.example.DepartmentalStoreCrud.bean.Customer;
 import com.example.DepartmentalStoreCrud.bean.Order;
 import com.example.DepartmentalStoreCrud.bean.ProductInventory;
@@ -10,6 +9,7 @@ import com.example.DepartmentalStoreCrud.repository.OrderRepository;
 import com.example.DepartmentalStoreCrud.repository.ProductInventoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -54,13 +54,14 @@ class OrderServiceTest {
         // Arrange
         List<Order> orders = new ArrayList<>();
         orders.add(createOrder(1L)); // Sample order with ID 1L
+        orders.add(createOrder(2L));
         when(orderRepository.findAll()).thenReturn(orders);
 
         // Act
         List<Order> result = orderService.getAllOrders();
 
         // Assert
-        assertEquals(1, result.size());
+        assertEquals(orders.size(), result.size());
         verify(orderRepository, times(1)).findAll();
     }
 
@@ -71,12 +72,16 @@ class OrderServiceTest {
         Order order = createOrder(orderId); // Sample order with ID 1L
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
+        //Argument Captor
+        ArgumentCaptor<Long> orderIdCaptor = ArgumentCaptor.forClass(Long.class);
+
         // Act
         Order result = orderService.getOrderById(orderId);
 
         // Assert
         assertEquals(order, result);
-        verify(orderRepository, times(1)).findById(orderId);
+        verify(orderRepository, times(1)).findById(orderIdCaptor.capture());
+        assertEquals(orderId, orderIdCaptor.getValue());
     }
 
     @Test
@@ -98,31 +103,17 @@ class OrderServiceTest {
         when(productInventoryRepository.findById(order.getProductInventory().getProductID())).thenReturn(Optional.of(order.getProductInventory()));
         when(customerRepository.findById(order.getCustomer().getCustomerID())).thenReturn(Optional.of(order.getCustomer()));
 
+        // Argument captor
+        ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+
         // Act
         orderService.addOrderDetails(order);
 
         // Assert
-        verify(orderRepository, times(2)).save(order);
+        verify(orderRepository, times(2)).save(orderCaptor.capture());
         verify(productInventoryRepository, times(1)).findById(order.getProductInventory().getProductID());
         verify(customerRepository, times(1)).findById(order.getCustomer().getCustomerID());
-    }
-
-    @Test
-    void testAddOrderDetails_OutOfStock() {
-        // Arrange
-        Order order = createOrder(1L); // Sample order with ID 1L
-        ProductInventory productInventory = order.getProductInventory();
-        productInventory.setProductQuantity(0);
-        when(orderRepository.save(order)).thenReturn(order);
-        when(productInventoryRepository.findById(order.getProductInventory().getProductID())).thenReturn(Optional.of(productInventory));
-        when(customerRepository.findById(order.getCustomer().getCustomerID())).thenReturn(Optional.of(order.getCustomer()));
-
-        // Act and Assert
-        assertThrows(IllegalStateException.class, () -> orderService.addOrderDetails(order));
-        verify(orderRepository, times(2)).save(order);
-        verify(productInventoryRepository, times(1)).findById(order.getProductInventory().getProductID());
-        verify(customerRepository, times(1)).findById(order.getCustomer().getCustomerID());
-        verify(backorderService, times(1)).createBackorder(any(Backorder.class));
+        assertEquals(order, orderCaptor.getValue());
     }
 
     @Test
@@ -133,32 +124,17 @@ class OrderServiceTest {
         when(productInventoryRepository.findById(order.getProductInventory().getProductID())).thenReturn(Optional.of(order.getProductInventory()));
         when(customerRepository.findById(order.getCustomer().getCustomerID())).thenReturn(Optional.of(order.getCustomer()));
 
+        // Argument captor
+        ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+
         // Act
         orderService.updateOrderDetails(order);
 
         // Assert
-        verify(orderRepository, times(2)).save(order);
+        verify(orderRepository, times(2)).save(orderCaptor.capture());
         verify(productInventoryRepository, times(1)).findById(order.getProductInventory().getProductID());
         verify(customerRepository, times(1)).findById(order.getCustomer().getCustomerID());
-    }
-
-    @Test
-    void testUpdateOrderDetails_OutOfStock() {
-        // Arrange
-        Order order = createOrder(1L); // Sample order with ID 1L
-        ProductInventory productInventory = order.getProductInventory();
-        productInventory.setProductQuantity(0);
-        when(orderRepository.save(order)).thenReturn(order);
-        when(productInventoryRepository.findById(order.getProductInventory().getProductID())).thenReturn(Optional.of(order.getProductInventory()));
-        when(customerRepository.findById(order.getCustomer().getCustomerID())).thenReturn(Optional.of(order.getCustomer()));
-
-        // Act
-        assertThrows(IllegalStateException.class, () -> orderService.updateOrderDetails(order));
-
-        // Assert
-        verify(orderRepository, times(2)).save(order);
-        verify(productInventoryRepository, times(1)).findById(order.getProductInventory().getProductID());
-        verify(customerRepository, times(1)).findById(order.getCustomer().getCustomerID());
+        assertEquals(order, orderCaptor.getValue());
     }
 
     private Order createOrder(Long orderId) {

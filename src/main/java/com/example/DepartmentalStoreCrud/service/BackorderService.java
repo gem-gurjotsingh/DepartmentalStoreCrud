@@ -28,6 +28,8 @@ public class BackorderService {
     }
 
     public final void deleteBackorder(final Long backorderId) {
-        backorderRepository.deleteById(backorderId);
+        if (getBackorderById(backorderId) != null) {
+            backorderRepository.deleteById(backorderId);
+        }
     }
 }

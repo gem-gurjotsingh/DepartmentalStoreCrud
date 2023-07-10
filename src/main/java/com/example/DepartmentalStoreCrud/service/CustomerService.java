@@ -3,6 +3,7 @@ import com.example.DepartmentalStoreCrud.bean.Customer;
 import com.example.DepartmentalStoreCrud.bean.Order;
 import com.example.DepartmentalStoreCrud.repository.CustomerRepository;
 import com.example.DepartmentalStoreCrud.repository.OrderRepository;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import java.util.NoSuchElementException;
 import java.util.List;
 
 @Service
+@Data
 public class CustomerService {
 
     @Value("${email.regexp}")

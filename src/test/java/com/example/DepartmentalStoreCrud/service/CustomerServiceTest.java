@@ -7,9 +7,8 @@ import com.example.DepartmentalStoreCrud.repository.CustomerRepository;
 import com.example.DepartmentalStoreCrud.repository.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
+import org.springframework.core.env.Environment;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,8 +16,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class CustomerServiceTest {
@@ -29,12 +27,21 @@ class CustomerServiceTest {
     @Mock
     private OrderRepository orderRepository;
 
+    @Mock
+    private Environment environment;
+
     @InjectMocks
     private CustomerService customerService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        when(environment.getProperty("email.regexp")).thenReturn("^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
+        when(environment.getProperty("contact.regexp")).thenReturn("^\\+91[6789]\\d{9}$");
+
+        // Set the mocked environment in the customerService instance
+        customerService.setEmailRegexp(environment.getProperty("email.regexp"));
+        customerService.setContactRegexp(environment.getProperty("contact.regexp"));
     }
 
     @Test
@@ -42,13 +49,15 @@ class CustomerServiceTest {
         // Arrange
         List<Customer> customers = new ArrayList<>();
         customers.add(createCustomer(1L)); // Sample customer with ID 1L
+        customers.add(createCustomer(2L));
         when(customerRepository.findAll()).thenReturn(customers);
 
         // Act
         List<Customer> result = customerService.getAllCustomers();
 
         // Assert
-        assertEquals(1, result.size());
+        assertEquals(customers.size(), result.size());
+        assertEquals(customers, result);
         verify(customerRepository, times(1)).findAll();
     }
 
@@ -56,21 +65,26 @@ class CustomerServiceTest {
     void testGetCustomerById_ExistingCustomer() {
         // Arrange
         Long customerId = 1L;
-        Customer customer = createCustomer(customerId); // Sample order with ID 1L
+        Customer customer = createCustomer(customerId); // Sample customer with ID 1L
         when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+        // Argument captor
+        ArgumentCaptor<Long> customerIdCaptor = ArgumentCaptor.forClass(Long.class);
 
         // Act
         Customer result = customerService.getCustomerById(customerId);
 
         // Assert
         assertEquals(customer, result);
-        verify(customerRepository, times(1)).findById(customerId);
+        verify(customerRepository, times(1)).findById(customerIdCaptor.capture());
+        assertEquals(customerId, customerIdCaptor.getValue());
     }
+
 
     @Test
     void testGetCustomerById_NonExistingCustomer() {
         // Arrange
-        Long customerId = 1L;
+        Long customerId = 3L;
         when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
 
         // Act
@@ -85,30 +99,41 @@ class CustomerServiceTest {
         Customer customer = createCustomer(customerId);
         List<Order> orders = new ArrayList<>();
         orders.add(createOrder(1L)); // Sample order with ID 1L and matching customer ID
+        orders.add(createOrder(2L));
         when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
         when(orderRepository.findByCustomer_CustomerID(customerId)).thenReturn(orders);
+
+        // Argument captor
+        ArgumentCaptor<Long> customerIdCaptor = ArgumentCaptor.forClass(Long.class);
 
         // Act
         List<Order> result = customerService.getOrdersByCustomer(customerId);
 
         // Assert
-        assertEquals(1, result.size());
+        assertEquals(orders.size(), result.size());
         assertEquals(orders, result);
-        verify(customerRepository, times(1)).findById(customerId);
-        verify(orderRepository, times(1)).findByCustomer_CustomerID(customerId);
+        verify(customerRepository, times(1)).findById(customerIdCaptor.capture());
+        assertEquals(customerId, customerIdCaptor.getValue());
+        verify(orderRepository, times(1)).findByCustomer_CustomerID(customerIdCaptor.capture());
+        assertEquals(customerId, customerIdCaptor.getValue());
     }
 
     @Test
-    void testAddCustomerDetails_ValidEmail() {
+    void testAddCustomerDetails_ValidEmailContact() {
         // Arrange
         Customer customer = createCustomer(1L); // Sample customer with ID 1L
+
         when(customerRepository.save(customer)).thenReturn(customer);
+
+        // Argument captor
+        ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
 
         // Act
         customerService.addCustomerDetails(customer);
 
         // Assert
-        verify(customerRepository, times(1)).save(customer);
+        verify(customerRepository, times(1)).save(customerCaptor.capture());
+        assertEquals(customer, customerCaptor.getValue());
     }
 
     @Test
@@ -124,17 +149,34 @@ class CustomerServiceTest {
     }
 
     @Test
-    void testUpdateCustomerDetails_ValidEmail() {
+    void testAddCustomerDetails_InvalidContact() {
         // Arrange
         Customer customer = createCustomer(1L); // Sample customer with ID 1L
+        customer.setContactNumber("1234567");
+        when(customerRepository.save(customer)).thenReturn(customer);
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> customerService.addCustomerDetails(customer));
+        verify(customerRepository, never()).save(customer);
+    }
+
+    @Test
+    void testUpdateCustomerDetails_ValidEmailContact() {
+        // Arrange
+        Customer customer = createCustomer(1L); // Sample customer with ID 1L
+
         when(customerRepository.findById(customer.getCustomerID())).thenReturn(Optional.of(customer));
         when(customerRepository.save(customer)).thenReturn(customer);
 
+        // Argument captor
+        ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
+
         // Act
-        customerService.updateCustomerDetails(customer.getCustomerID(),customer);
+        customerService.updateCustomerDetails(customer.getCustomerID(), customer);
 
         // Assert
-        verify(customerRepository, times(1)).save(customer);
+        verify(customerRepository, times(1)).save(customerCaptor.capture());
+        assertEquals(customer, customerCaptor.getValue());
     }
 
     @Test
@@ -142,26 +184,60 @@ class CustomerServiceTest {
         // Arrange
         Customer customer = createCustomer(1L); // Sample customer with ID 1L
         customer.setEmailID("invalid-email");
+
         when(customerRepository.findById(customer.getCustomerID())).thenReturn(Optional.of(customer));
         when(customerRepository.save(customer)).thenReturn(customer);
 
-        // Act & Assert
+        // Act
         assertThrows(IllegalArgumentException.class, () -> customerService.updateCustomerDetails(customer.getCustomerID(), customer));
+
+        // Assert
         verify(customerRepository, never()).save(customer);
     }
 
     @Test
-    void testDeleteCustomerDetails() {
+    void testUpdateCustomerDetails_InvalidContact() {
         // Arrange
-        Long customerId = 1L;
+        Customer customer = createCustomer(1L); // Sample customer with ID 1L
+        customer.setContactNumber("1234567");
+
+        when(customerRepository.findById(customer.getCustomerID())).thenReturn(Optional.of(customer));
+        when(customerRepository.save(customer)).thenReturn(customer);
+
+        // Act
+        assertThrows(IllegalArgumentException.class, () -> customerService.updateCustomerDetails(customer.getCustomerID(), customer));
+
+        // Assert
+        verify(customerRepository, never()).save(customer);
+    }
+
+    @Test
+    void testDeleteCustomerDetails_ExistingCustomer() {
+        // Arrange
+        Long customerId = 3L;
         Customer customer = createCustomer(customerId);
         when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+        ArgumentCaptor<Long> customerIdCaptor = ArgumentCaptor.forClass(Long.class);
 
         // Act
         customerService.deleteCustomerDetails(customerId);
 
         // Assert
-        verify(customerRepository, times(1)).deleteById(customerId);
+        verify(customerRepository, times(1)).deleteById(customerIdCaptor.capture());
+        assertEquals(customerId, customerIdCaptor.getValue());
+    }
+
+    @Test
+    void testDeleteCustomerDetails_NonExistingCustomer() {
+        // Arrange
+        Long customerId = 1L;
+        when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(NoSuchElementException.class, () -> customerService.deleteCustomerDetails(customerId));
+        verify(customerRepository, times(1)).findById(customerId);
+        verify(customerRepository, never()).delete(any());
     }
 
     private Customer createCustomer(Long customerId) {
@@ -169,8 +245,8 @@ class CustomerServiceTest {
         customer.setCustomerID(customerId);
         customer.setFullName("John Doe");
         customer.setAddress("123 Main Street");
-        customer.setContactNumber("123-456-7890");
-        customer.setEmailID("johndoe@example.com");
+        customer.setContactNumber("+919417665710");
+        customer.setEmailID("johndoe@gmail.com");
         return customer;
     }
 

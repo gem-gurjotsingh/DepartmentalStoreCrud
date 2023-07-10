@@ -4,11 +4,10 @@ import com.example.DepartmentalStoreCrud.bean.ProductInventory;
 import com.example.DepartmentalStoreCrud.repository.ProductInventoryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.web.multipart.MultipartFile;
-
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -39,7 +38,8 @@ class ProductInventoryServiceTest {
         List<ProductInventory> result = productInventoryService.getAllProducts();
 
         // Assert
-        assertEquals(2, result.size());
+        assertEquals(products.size(), result.size());
+        assertEquals(products, result);
         verify(productInventoryRepository, times(1)).findAll();
     }
 
@@ -50,12 +50,16 @@ class ProductInventoryServiceTest {
         ProductInventory productInventory = createProduct(productId); // Sample order with ID 1L
         when(productInventoryRepository.findById(productId)).thenReturn(Optional.of(productInventory));
 
+        //Argument Captor
+        ArgumentCaptor<Long> productIdCaptor = ArgumentCaptor.forClass(Long.class);
+
         // Act
         ProductInventory result = productInventoryService.getProductById(productId);
 
         // Assert
         assertEquals(productInventory, result);
-        verify(productInventoryRepository, times(1)).findById(productId);
+        verify(productInventoryRepository, times(1)).findById(productIdCaptor.capture());
+        assertEquals(productId, productIdCaptor.getValue());
     }
 
     @Test
@@ -76,25 +80,47 @@ class ProductInventoryServiceTest {
         when(productInventoryRepository.findById(product.getProductID())).thenReturn(Optional.of(product));
         when(productInventoryRepository.save(product)).thenReturn(product);
 
+        //Argument captor
+        ArgumentCaptor<ProductInventory> productCaptor = ArgumentCaptor.forClass(ProductInventory.class);
+
         // Act
         productInventoryService.updateProductDetails(product.getProductID(), product);
 
         // Assert
-        verify(productInventoryRepository, times(1)).save(product);
+        verify(productInventoryRepository, times(1)).save(productCaptor.capture());
+        assertEquals(product, productCaptor.getValue());
     }
 
     @Test
-    void testDeleteProductDetails() {
+    void testDeleteProductDetails_ExistingProduct() {
         // Arrange
         Long productId = 1L;
         ProductInventory productInventory = createProduct(productId);
         when(productInventoryRepository.findById(productId)).thenReturn(Optional.of(productInventory));
 
+        //Argument Captor
+        ArgumentCaptor<Long> productIdCaptor = ArgumentCaptor.forClass(Long.class);
+
         // Act
         productInventoryService.deleteProductDetails(productId);
 
         // Assert
-        verify(productInventoryRepository, times(1)).deleteById(productId);
+        verify(productInventoryRepository, times(1)).deleteById(productIdCaptor.capture());
+        assertEquals(productId, productIdCaptor.getValue());
+    }
+
+    @Test
+    void testDeleteProductDetails_NonExistingProduct() {
+        // Arrange
+        Long productId = 3L;
+        when(productInventoryRepository.findById(productId)).thenReturn(Optional.empty());
+
+        // Act
+        assertThrows(NoSuchElementException.class, () -> productInventoryService.deleteProductDetails(productId));
+
+        // Assert
+        verify(productInventoryRepository, times(1)).findById(productId);
+        verify(productInventoryRepository, never()).delete(any());
     }
 
     private ProductInventory createProduct(Long productId) {
@@ -106,13 +132,5 @@ class ProductInventoryServiceTest {
         product.setProductQuantity(10); // Set the desired count
 
         return product;
-    }
-
-    private MultipartFile createMockMultipartFile(String fileName, String contentType, byte[] excelData) throws Exception {
-        MultipartFile file = mock(MultipartFile.class);
-        doReturn(contentType).when(file).getContentType();
-        when(file.getOriginalFilename()).thenReturn(fileName);
-        when(file.getInputStream()).thenReturn(getClass().getResourceAsStream("/" + fileName));
-        return file;
     }
 }
