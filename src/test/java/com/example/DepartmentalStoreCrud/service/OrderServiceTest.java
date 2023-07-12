@@ -30,16 +30,10 @@ class OrderServiceTest {
     private OrderRepository orderRepository;
 
     @Mock
-    private BackorderService backorderService;
-
-    @Mock
     private ProductInventoryRepository productInventoryRepository;
 
     @Mock
     private CustomerRepository customerRepository;
-
-    @Mock
-    private BackorderRepository backorderRepository;
 
     @InjectMocks
     private OrderService orderService;

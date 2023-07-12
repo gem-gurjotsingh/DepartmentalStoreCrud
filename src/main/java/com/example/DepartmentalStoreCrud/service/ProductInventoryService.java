@@ -34,6 +34,9 @@ public class ProductInventoryService {
     @Autowired
     private OrderRepository orderRepo;
 
+    public ProductInventoryService() {
+    }
+
     //check that file is of excel type or not
     private boolean checkExcelFormat(final MultipartFile file) {
 

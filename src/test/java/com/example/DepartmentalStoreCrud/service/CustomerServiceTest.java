@@ -8,6 +8,7 @@ import com.example.DepartmentalStoreCrud.repository.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 
 import java.time.LocalDateTime;
@@ -39,7 +40,7 @@ class CustomerServiceTest {
         when(environment.getProperty("email.regexp")).thenReturn("^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
         when(environment.getProperty("contact.regexp")).thenReturn("^\\+91[6789]\\d{9}$");
 
-        // Set the mocked environment in the customerService instance
+         //Set the mocked environment in the customerService instance
         customerService.setEmailRegexp(environment.getProperty("email.regexp"));
         customerService.setContactRegexp(environment.getProperty("contact.regexp"));
     }

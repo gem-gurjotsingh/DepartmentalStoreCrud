@@ -21,18 +21,22 @@ public class CustomerService {
     @Value("${contact.regexp}")
     private String contactRegexp;
 
-    @Autowired
-    private CustomerRepository customRepo;
+    private final CustomerRepository customerRepo;
+
+    private final OrderRepository orderRepo;
 
     @Autowired
-    private OrderRepository orderRepo;
+    public CustomerService(final CustomerRepository customerRepo, final OrderRepository orderRepo) {
+        this.customerRepo = customerRepo;
+        this.orderRepo = orderRepo;
+    }
 
     public final List<Customer> getAllCustomers() {
-        return customRepo.findAll();
+        return customerRepo.findAll();
     }
 
     public final Customer getCustomerById(final Long customerID) {
-        return customRepo.findById(customerID)
+        return customerRepo.findById(customerID)
                 .orElseThrow(() -> new NoSuchElementException("No customer exists with ID: " + customerID));
     }
 
@@ -58,7 +62,7 @@ public class CustomerService {
     public final void addCustomerDetails(final Customer customer) {
         validateContact(customer.getContactNumber());
         validateEmail(customer.getEmailID());
-        customRepo.save(customer);
+        customerRepo.save(customer);
     }
 
     public final void updateCustomerDetails(final Long customerID, final Customer customer) {
@@ -74,12 +78,12 @@ public class CustomerService {
         }
         validateContact(existingCustomer.getContactNumber());
         validateEmail(existingCustomer.getEmailID());
-        customRepo.save(existingCustomer);
+        customerRepo.save(existingCustomer);
     }
 
     public final void deleteCustomerDetails(final Long customerID) {
         if (getCustomerById(customerID) != null) {
-            customRepo.deleteById(customerID);
+            customerRepo.deleteById(customerID);
         }
     }
 }
