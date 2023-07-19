@@ -129,7 +129,7 @@ public class ProductInventoryService {
     /**
      * Cronjob to run the removeBackorders function every midnight
      */
-    @Scheduled(cron = "0 * * * * *")   // Runs every midnight
+    @Scheduled(cron = "0 0 * * * *")   // Runs every midnight
     private void deleteBackordersCronJob() {
         // Get all existing products
         List<ProductInventory> products = productRepo.findAll();
