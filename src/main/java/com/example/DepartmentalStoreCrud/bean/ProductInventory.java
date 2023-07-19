@@ -21,6 +21,10 @@ import java.util.List;
 @Table(name = "ProductInventory")
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ProductInventory {
+
+    /**
+     * productID is the primary key for Product table
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "productID")

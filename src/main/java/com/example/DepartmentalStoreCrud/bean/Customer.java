@@ -23,6 +23,10 @@ import java.util.List;
 @Table(name = "Customer")
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Customer {
+
+    /**
+     * customerID is the primary key for Customer table
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "customerID")

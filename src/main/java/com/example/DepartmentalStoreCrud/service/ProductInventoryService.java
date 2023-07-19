@@ -6,132 +6,106 @@ import com.example.DepartmentalStoreCrud.bean.ProductInventory;
 import com.example.DepartmentalStoreCrud.repository.BackorderRepository;
 import com.example.DepartmentalStoreCrud.repository.OrderRepository;
 import com.example.DepartmentalStoreCrud.repository.ProductInventoryRepository;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
+@Slf4j
 public class ProductInventoryService {
 
+    /**
+     * Autowired ProductInventoryRepository
+     */
     @Autowired
     private ProductInventoryRepository productRepo;
 
+    /**
+     * Autowired BackorderRepository
+     */
     @Autowired
     private BackorderRepository backorderRepo;
 
+    /**
+     * Autowired OrderRepository
+     */
     @Autowired
     private OrderRepository orderRepo;
 
-    public ProductInventoryService() {
-    }
-
-    //check that file is of excel type or not
-    private boolean checkExcelFormat(final MultipartFile file) {
-
-        String contentType = file.getContentType();
-
-        if (contentType != null && contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
-            return true;
-        }
-        return false;
-    }
-
-    //convert excel to list of products
-    private List<ProductInventory> convertExcelToListOfProducts(final InputStream is) throws IOException {
-        List<ProductInventory> productList = new ArrayList<>();
-            XSSFWorkbook workbook = new XSSFWorkbook(is);
-
-            XSSFSheet sheet = workbook.getSheet("productData");
-
-            int rowNumber = 0;
-            Iterator<Row> iterator = sheet.iterator();
-
-            while (iterator.hasNext()) {
-                Row row = iterator.next();
-
-                if (rowNumber == 0) {
-                    rowNumber++;
-                    continue;
-                }
-
-                Iterator<Cell> cells = row.iterator();
-
-                int cid = 0;
-
-                ProductInventory p = new ProductInventory();
-
-                while (cells.hasNext()) {
-                    Cell cell = cells.next();
-
-                    switch (cid) {
-                        case 0:
-                            p.setProductName(cell.getStringCellValue());
-                            break;
-                        case 1:
-                            p.setProductDesc(cell.getStringCellValue());
-                            break;
-                        case 2:
-                            p.setPrice(cell.getNumericCellValue());
-                            break;
-                        case 3:
-                            p.setProductQuantity((int) cell.getNumericCellValue());
-                            break;
-                        default:
-                            break;
-                    }
-                    cid++;
-                }
-                productList.add(p);
-            }
-        return productList;
-    }
-
-    public final void addProductsViaExcel(final MultipartFile file) throws IOException {
-        if (checkExcelFormat(file)) {
-            List<ProductInventory> products = convertExcelToListOfProducts(file.getInputStream());
-            productRepo.saveAll(products);
-        } else {
-            throw new IllegalArgumentException("Invalid file format");
-        }
-    }
-
-    public final List<ProductInventory> getAllProducts() {
+    /**
+     * To get List of all Products.
+     *
+     * @return List of Products
+     *
+     */
+    public List<ProductInventory> getAllProducts() {
+        log.info("Products list fetched");
         return productRepo.findAll();
     }
 
-    public final ProductInventory getProductById(final Long productID) {
-        return productRepo.findById(productID)
-                .orElseThrow(() -> new NoSuchElementException("No product exists with ID: " + productID));
-    }
-
-//    public void addProductDetails(ProductInventory productInventory) {
-//        productRepo.save(productInventory);
-//    }
-
-    public final void updateProductDetails(final Long productID, final ProductInventory productInventory) {
-        ProductInventory existingProduct = getProductById(productID);
-        if (existingProduct != null) {
-            existingProduct.setProductID(productID);
-            existingProduct.setProductDesc(productInventory.getProductDesc());
-            existingProduct.setProductName(productInventory.getProductName());
-            existingProduct.setPrice(productInventory.getPrice());
-            existingProduct.setProductQuantity(productInventory.getProductQuantity());
-            productRepo.save(existingProduct);
+    /**
+     * To get Details of Product with Product's ID.
+     *
+     * @param productID - Product's ID
+     * @return Product Details
+     */
+    public ProductInventory getProductById(final Long productID) {
+        Optional<ProductInventory> productInventory = productRepo.findById(productID);
+        if (productInventory.isEmpty()) {
+            log.info("Invalid product id");
+            throw new NoSuchElementException("No product exists with ID: " + productID);
         }
+        log.info("Product found with id-" + productID);
+        return productInventory.get();
     }
 
+    /**
+     * To Add a new Product.
+     *
+     * @param productInventory - Product's details
+     * @return Product's Details
+     */
+    public ProductInventory addProductDetails(final ProductInventory productInventory) {
+        if (productInventory.getProductName() == null || productInventory.getProductDesc() == null) {
+            log.info("Product details are missing");
+            throw new IllegalArgumentException("Enter valid product data");
+        }
+        log.info("Product added successfully");
+        return productRepo.save(productInventory);
+    }
+
+    /**
+     * To update Product details.
+     *
+     * @param productInventory - Product's details
+     * @return Product's Details
+     */
+    public ProductInventory updateProductDetails(final Long productID, final ProductInventory productInventory) {
+        Optional<ProductInventory> productInventoryOptional = productRepo.findById(productID);
+        if (productInventoryOptional.isEmpty()) {
+            log.info("Invalid product id");
+            throw new NoSuchElementException("No product exists with ID: " + productID);
+        }
+        ProductInventory existingProduct = productInventoryOptional.get();
+        existingProduct.setProductDesc(productInventory.getProductDesc() == null ? existingProduct.getProductDesc() : productInventory.getProductDesc());
+        existingProduct.setProductName(productInventory.getProductName() == null ? existingProduct.getProductName() : productInventory.getProductName());
+        existingProduct.setPrice(productInventory.getPrice());
+        existingProduct.setProductQuantity(productInventory.getProductQuantity());
+        log.info("Product updated successfully with id-" + productID);
+        return productRepo.save(existingProduct);
+    }
+
+    /**
+     * To remove the backorders for a product
+     *
+     * @param newQuantity - Product's updated quantity
+     * @param existingProduct - Product details
+     */
     private void removeBackorders(final int newQuantity, final ProductInventory existingProduct) {
         if (newQuantity > 0) {
             List<Order> orders = orderRepo.findByProductInventory(existingProduct);
@@ -152,7 +126,10 @@ public class ProductInventoryService {
       }
     }
 
-    @Scheduled(cron = "0 0 * * * *")   // Runs every midnight
+    /**
+     * Cronjob to run the removeBackorders function every midnight
+     */
+    @Scheduled(cron = "0 * * * * *")   // Runs every midnight
     private void deleteBackordersCronJob() {
         // Get all existing products
         List<ProductInventory> products = productRepo.findAll();
@@ -162,9 +139,18 @@ public class ProductInventoryService {
         }
     }
 
-    public final void deleteProductDetails(final Long productID) {
-        if (getProductById(productID) != null) {
-            productRepo.deleteById(productID);
+    /**
+     * To delete/remove the product.
+     *
+     * @param productID - Product's ID
+     */
+    public void deleteProductDetails(final Long productID) {
+        Optional<ProductInventory> productInventory = productRepo.findById(productID);
+        if (productInventory.isEmpty()) {
+            log.info("Invalid product id");
+            throw new NoSuchElementException("No product exists with ID: " + productID);
         }
+        log.info("Product deleted with id-" + productID);
+        productRepo.deleteById(productID);
     }
 }

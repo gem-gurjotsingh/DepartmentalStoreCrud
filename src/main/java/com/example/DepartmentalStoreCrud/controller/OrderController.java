@@ -20,9 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/orderDetails")
+@RequestMapping(path = "/orderDetails")
 public class OrderController {
 
+    /**
+     * Autowired OrderService
+     */
     @Autowired
     private OrderService orderService;
 
@@ -36,9 +39,9 @@ public class OrderController {
             @ApiResponse(responseCode = "200", description = "Orders fetched successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping
-    public List<Order> getAllOrders() {
-        return orderService.getAllOrders();
+    @GetMapping(produces = "application/json")
+    public ResponseEntity<List<Order>> getAllOrders() {
+        return new ResponseEntity<>(orderService.getAllOrders(), HttpStatus.OK);
     }
 
     /**
@@ -53,7 +56,7 @@ public class OrderController {
             @ApiResponse(responseCode = "404", description = "Order not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/{orderID}")
+    @GetMapping(path = "/{orderID}", produces = "application/json")
     public ResponseEntity<Order> getOrderById(
             @Parameter(description = "The ID of the order to retrieve.", required = true)
             @PathVariable final Long orderID) {
@@ -71,7 +74,7 @@ public class OrderController {
             @ApiResponse(responseCode = "201", description = "Order placed successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping
+    @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> addOrderDetails(@RequestBody(required = true) final Order order) {
         orderService.addOrderDetails(order);
         return ResponseEntity.status(HttpStatus.CREATED).body("Order placed successfully.");
@@ -90,11 +93,11 @@ public class OrderController {
             @ApiResponse(responseCode = "404", description = "Order not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PutMapping("/{orderID}")
+    @PutMapping(path = "/{orderID}", consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> updateOrderDetails(
             @Parameter(description = "The ID of the order to update.", required = true)
             @PathVariable final Long orderID, @RequestBody(required = true) final Order order) {
-            orderService.updateOrderDetails(order);
+            orderService.updateOrderDetails(orderID, order);
             return ResponseEntity.ok("Order updated successfully.");
     }
 
@@ -110,7 +113,7 @@ public class OrderController {
             @ApiResponse(responseCode = "404", description = "Order not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @DeleteMapping("/{orderID}")
+    @DeleteMapping(path = "/{orderID}")
     public ResponseEntity<String> deleteOrderDetails(
             @Parameter(description = "The ID of the order to delete.", required = true)
             @PathVariable final Long orderID) {

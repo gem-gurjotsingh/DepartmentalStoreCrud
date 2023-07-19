@@ -17,6 +17,9 @@ import lombok.Data;
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Backorder {
 
+    /**
+     * backorderID is the primary key for Backorder table
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long backorderID;

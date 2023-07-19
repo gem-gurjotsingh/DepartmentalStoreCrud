@@ -21,6 +21,7 @@
 		<owasp.dependencycheck.version>7.4.4</owasp.dependencycheck.version>
 		<maven.checkstyle.version>3.1.2</maven.checkstyle.version>
 		<poi.version>4.1.2</poi.version>
+		<jacoco.plugin.version>0.8.8</jacoco.plugin.version>
 	</properties>
 
 	<dependencies>
@@ -74,7 +75,12 @@
 			<version>${spotbugs.version}</version>
 			<scope>provided</scope>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<plugins>
@@ -95,6 +101,7 @@
 					</execution>
 				</executions>
 			</plugin>
+
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
@@ -124,6 +131,53 @@
 							<goal>check</goal>
 						</goals>
 					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco.plugin.version}</version>
+				<configuration>
+				<excludes>
+					<exclude>**/config/*</exclude>
+					<exclude>**/bean/*</exclude>
+					<exclude>**/exception/*</exclude>
+					<exclude>**/repository/*</exclude>
+				</excludes>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+<!--					<execution>-->
+<!--						<id>jacoco-check</id>-->
+<!--						<goals>-->
+<!--							<goal>check</goal>-->
+<!--						</goals>-->
+<!--						<configuration>-->
+<!--							<rules>-->
+<!--								<rule>-->
+<!--									<element>PACKAGE</element>-->
+<!--									<limits>-->
+<!--										<limit>-->
+<!--											<counter>LINE</counter>-->
+<!--											<value>COVEREDRATIO</value>-->
+<!--											<minimum>0.70</minimum>-->
+<!--										</limit>-->
+<!--									</limits>-->
+<!--								</rule>-->
+<!--							</rules>-->
+<!--						</configuration>-->
+<!--					</execution>-->
 				</executions>
 			</plugin>
 		</plugins>

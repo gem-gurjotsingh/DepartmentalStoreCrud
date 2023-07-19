@@ -8,8 +8,9 @@ import com.example.DepartmentalStoreCrud.repository.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.core.env.Environment;
+import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -17,10 +18,13 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class CustomerServiceTest {
+@SpringBootTest
+@TestPropertySource("classpath:test.properties")
+public class CustomerServiceTest {
 
     @Mock
     private CustomerRepository customerRepository;
@@ -28,42 +32,30 @@ class CustomerServiceTest {
     @Mock
     private OrderRepository orderRepository;
 
-    @Mock
-    private Environment environment;
-
+    @Autowired
     @InjectMocks
     private CustomerService customerService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        when(environment.getProperty("email.regexp")).thenReturn("^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
-        when(environment.getProperty("contact.regexp")).thenReturn("^\\+91[6789]\\d{9}$");
-
-         //Set the mocked environment in the customerService instance
-        customerService.setEmailRegexp(environment.getProperty("email.regexp"));
-        customerService.setContactRegexp(environment.getProperty("contact.regexp"));
     }
 
     @Test
-    void testGetAllCustomers() {
-        // Arrange
+    public void testGetAllCustomers() {
         List<Customer> customers = new ArrayList<>();
         customers.add(createCustomer(1L)); // Sample customer with ID 1L
         customers.add(createCustomer(2L));
         when(customerRepository.findAll()).thenReturn(customers);
-
-        // Act
+        assertNotNull(customers);
         List<Customer> result = customerService.getAllCustomers();
-
-        // Assert
-        assertEquals(customers.size(), result.size());
+        assertEquals(2, result.size());
         assertEquals(customers, result);
         verify(customerRepository, times(1)).findAll();
     }
 
     @Test
-    void testGetCustomerById_ExistingCustomer() {
+    public void testGetCustomerById_ExistingCustomer() {
         // Arrange
         Long customerId = 1L;
         Customer customer = createCustomer(customerId); // Sample customer with ID 1L
@@ -83,18 +75,15 @@ class CustomerServiceTest {
 
 
     @Test
-    void testGetCustomerById_NonExistingCustomer() {
-        // Arrange
-        Long customerId = 3L;
-        when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
-
-        // Act
-        assertThrows(NoSuchElementException.class, () -> customerService.getCustomerById(customerId));
-        verify(customerRepository, times(1)).findById(customerId);
+    public void testGetCustomerById_NonExistingCustomer() {
+        when(customerRepository.findById(anyLong())).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> customerService.getCustomerById(3L)).
+                isInstanceOf(NoSuchElementException.class);
+        verify(customerRepository, times(1)).findById(3L);
     }
 
     @Test
-    void testGetOrdersByCustomer() {
+    public void testGetOrdersByCustomer() {
         // Arrange
         Long customerId = 1L;
         Customer customer = createCustomer(customerId);
@@ -111,7 +100,7 @@ class CustomerServiceTest {
         List<Order> result = customerService.getOrdersByCustomer(customerId);
 
         // Assert
-        assertEquals(orders.size(), result.size());
+        assertEquals(2, result.size());
         assertEquals(orders, result);
         verify(customerRepository, times(1)).findById(customerIdCaptor.capture());
         assertEquals(customerId, customerIdCaptor.getValue());
@@ -120,8 +109,7 @@ class CustomerServiceTest {
     }
 
     @Test
-    void testAddCustomerDetails_ValidEmailContact() {
-        // Arrange
+    public void testAddCustomerDetails_ValidEmailContact() {
         Customer customer = createCustomer(1L); // Sample customer with ID 1L
 
         when(customerRepository.save(customer)).thenReturn(customer);
@@ -129,16 +117,28 @@ class CustomerServiceTest {
         // Argument captor
         ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
 
-        // Act
-        customerService.addCustomerDetails(customer);
-
-        // Assert
+        Customer newCustomer = customerService.addCustomerDetails(customer);
+        assertNotNull(newCustomer);
+        assertEquals(customer, newCustomer);
         verify(customerRepository, times(1)).save(customerCaptor.capture());
+        assertTrue(customer.getContactNumber().matches(customerService.getContactRegexp()));
+        assertTrue(customer.getEmailID().matches(customerService.getEmailRegexp()));
         assertEquals(customer, customerCaptor.getValue());
     }
 
     @Test
-    void testAddCustomerDetails_InvalidEmail() {
+    public void testAddCustomerDetails_NullInputValue() {
+        // Arrange
+        Customer customer = new Customer(); // Sample customer with ID 1L
+        customer.setFullName(null);
+        when(customerRepository.save(customer)).thenReturn(customer);
+
+        assertThrows(IllegalArgumentException.class, () -> customerService.addCustomerDetails(customer));
+        verify(customerRepository, never()).save(customer);
+    }
+
+    @Test
+    public void testAddCustomerDetails_InvalidEmail() {
         // Arrange
         Customer customer = createCustomer(1L); // Sample customer with ID 1L
         customer.setEmailID("invalid-email");
@@ -150,38 +150,42 @@ class CustomerServiceTest {
     }
 
     @Test
-    void testAddCustomerDetails_InvalidContact() {
+    public void testAddCustomerDetails_InvalidContact() {
         // Arrange
         Customer customer = createCustomer(1L); // Sample customer with ID 1L
         customer.setContactNumber("1234567");
         when(customerRepository.save(customer)).thenReturn(customer);
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> customerService.addCustomerDetails(customer));
+        //assertThrows(IllegalArgumentException.class, () -> customerService.addCustomerDetails(customer));
+        assertThatThrownBy(() -> customerService.addCustomerDetails(customer))
+                .isInstanceOf(IllegalArgumentException.class);
         verify(customerRepository, never()).save(customer);
     }
 
     @Test
-    void testUpdateCustomerDetails_ValidEmailContact() {
+    public void testUpdateCustomerDetails_ValidEmailContact() {
         // Arrange
         Customer customer = createCustomer(1L); // Sample customer with ID 1L
 
         when(customerRepository.findById(customer.getCustomerID())).thenReturn(Optional.of(customer));
         when(customerRepository.save(customer)).thenReturn(customer);
+        customer.setFullName("Gurjot");
 
         // Argument captor
         ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
 
-        // Act
-        customerService.updateCustomerDetails(customer.getCustomerID(), customer);
-
-        // Assert
+        Customer existingCustomer = customerService.updateCustomerDetails(customer.getCustomerID(), customer);
+        assertNotNull(existingCustomer);
+        assertEquals("Gurjot", customer.getFullName());
+        assertTrue(customer.getContactNumber().matches(customerService.getContactRegexp()));
+        assertTrue(customer.getEmailID().matches(customerService.getEmailRegexp()));
         verify(customerRepository, times(1)).save(customerCaptor.capture());
         assertEquals(customer, customerCaptor.getValue());
     }
 
     @Test
-    void testUpdateCustomerDetails_InvalidEmail() {
+    public void testUpdateCustomerDetails_InvalidEmail() {
         // Arrange
         Customer customer = createCustomer(1L); // Sample customer with ID 1L
         customer.setEmailID("invalid-email");
@@ -193,11 +197,12 @@ class CustomerServiceTest {
         assertThrows(IllegalArgumentException.class, () -> customerService.updateCustomerDetails(customer.getCustomerID(), customer));
 
         // Assert
+        verify(customerRepository).findById(1L);
         verify(customerRepository, never()).save(customer);
     }
 
     @Test
-    void testUpdateCustomerDetails_InvalidContact() {
+    public void testUpdateCustomerDetails_InvalidContact() {
         // Arrange
         Customer customer = createCustomer(1L); // Sample customer with ID 1L
         customer.setContactNumber("1234567");
@@ -209,13 +214,14 @@ class CustomerServiceTest {
         assertThrows(IllegalArgumentException.class, () -> customerService.updateCustomerDetails(customer.getCustomerID(), customer));
 
         // Assert
+        verify(customerRepository).findById(1L);
         verify(customerRepository, never()).save(customer);
     }
 
     @Test
-    void testDeleteCustomerDetails_ExistingCustomer() {
+    public void testDeleteCustomerDetails_ExistingCustomer() {
         // Arrange
-        Long customerId = 3L;
+        Long customerId = 1L;
         Customer customer = createCustomer(customerId);
         when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
 
@@ -225,14 +231,16 @@ class CustomerServiceTest {
         customerService.deleteCustomerDetails(customerId);
 
         // Assert
+
+        verify(customerRepository, times(1)).findById(customerId);
         verify(customerRepository, times(1)).deleteById(customerIdCaptor.capture());
         assertEquals(customerId, customerIdCaptor.getValue());
     }
 
     @Test
-    void testDeleteCustomerDetails_NonExistingCustomer() {
+    public void testDeleteCustomerDetails_NonExistingCustomer() {
         // Arrange
-        Long customerId = 1L;
+        Long customerId = 3L;
         when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
 
         // Act & Assert

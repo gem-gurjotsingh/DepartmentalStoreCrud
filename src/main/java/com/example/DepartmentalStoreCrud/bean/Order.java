@@ -20,6 +20,9 @@ import java.time.LocalDateTime;
 @SuppressFBWarnings(value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Order {
 
+    /**
+     * orderID is the primary key for Order table
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "orderID")

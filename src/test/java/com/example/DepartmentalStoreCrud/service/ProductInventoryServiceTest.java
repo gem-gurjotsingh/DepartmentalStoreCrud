@@ -8,12 +8,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ContextConfiguration;
+
 import java.util.*;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class ProductInventoryServiceTest {
+public class ProductInventoryServiceTest {
 
     @Mock
     private ProductInventoryRepository productInventoryRepository;
@@ -27,24 +32,20 @@ class ProductInventoryServiceTest {
     }
 
     @Test
-    void testGetAllProducts() {
-        // Arrange
+    public void testGetAllProducts() {
         List<ProductInventory> products = new ArrayList<>();
         products.add(createProduct(1L)); // Sample product with ID 1L
         products.add(createProduct(2L));
         when(productInventoryRepository.findAll()).thenReturn(products);
-
-        // Act
+        assertNotNull(products);
         List<ProductInventory> result = productInventoryService.getAllProducts();
-
-        // Assert
-        assertEquals(products.size(), result.size());
+        assertEquals(2, result.size());
         assertEquals(products, result);
-        verify(productInventoryRepository, times(1)).findAll();
+        verify(productInventoryRepository).findAll();
     }
 
     @Test
-    void testGetProductById_ExistingProduct() {
+    public void testGetProductById_ExistingProduct() {
         // Arrange
         Long productId = 1L;
         ProductInventory productInventory = createProduct(productId); // Sample order with ID 1L
@@ -63,36 +64,77 @@ class ProductInventoryServiceTest {
     }
 
     @Test
-    void testGetProductById_NonExistingProduct() {
+    public void testGetProductById_NonExistingProduct() {
         // Arrange
         Long productId = 1L;
         when(productInventoryRepository.findById(productId)).thenReturn(Optional.empty());
-
-        // Act
-        assertThrows(NoSuchElementException.class, () -> productInventoryService.getProductById(productId));
+        assertThatThrownBy(() -> productInventoryService.getProductById(productId))
+                .isInstanceOf(NoSuchElementException.class);
         verify(productInventoryRepository, times(1)).findById(productId);
     }
 
     @Test
-    void testUpdateProductDetails() {
+    public void testAddProductDetails() {
+        ProductInventory productInventory = createProduct(1L);
+        when(productInventoryRepository.save(any(ProductInventory.class))).thenReturn(productInventory);
+
+        // Argument captor
+        ArgumentCaptor<ProductInventory> productCaptor = ArgumentCaptor.forClass(ProductInventory.class);
+
+
+        ProductInventory newProduct = productInventoryService.addProductDetails(productInventory);
+        assertNotNull(newProduct);
+        assertEquals(productInventory, newProduct);
+        verify(productInventoryRepository, times(1)).save(productCaptor.capture());
+        assertEquals(productInventory, productCaptor.getValue());
+    }
+
+    @Test
+    public void testAddProductDetails_NullInputValue() {
+        ProductInventory productInventory = createProduct(1L);
+        productInventory.setProductDesc(null);
+        when(productInventoryRepository.save(any(ProductInventory.class))).thenReturn(productInventory);
+
+        assertThatThrownBy(() -> productInventoryService.addProductDetails(productInventory))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(productInventoryRepository, never()).save(productInventory);
+    }
+
+    @Test
+    public void testUpdateProductDetails() {
         // Arrange
         ProductInventory product = createProduct(1L); // Sample product with ID 1L
         when(productInventoryRepository.findById(product.getProductID())).thenReturn(Optional.of(product));
         when(productInventoryRepository.save(product)).thenReturn(product);
+        product.setProductName("Thar");
 
         //Argument captor
         ArgumentCaptor<ProductInventory> productCaptor = ArgumentCaptor.forClass(ProductInventory.class);
 
         // Act
-        productInventoryService.updateProductDetails(product.getProductID(), product);
+        ProductInventory existingProduct = productInventoryService.updateProductDetails(product.getProductID(), product);
+        assertNotNull(existingProduct);
+        assertEquals("Thar", product.getProductName());
 
         // Assert
+        verify(productInventoryRepository, times(1)).findById(product.getProductID());
         verify(productInventoryRepository, times(1)).save(productCaptor.capture());
         assertEquals(product, productCaptor.getValue());
     }
 
     @Test
-    void testDeleteProductDetails_ExistingProduct() {
+    public void testUpdateProduct_NonExistingProduct() {
+        // Arrange
+        when(productInventoryRepository.findById(anyLong())).thenReturn(Optional.empty());
+        ProductInventory productInventory = new ProductInventory();
+        assertThatThrownBy(() -> productInventoryService.updateProductDetails(anyLong(), productInventory))
+                .isInstanceOf(NoSuchElementException.class);
+        verify(productInventoryRepository, times(1)).findById(anyLong());
+        verify(productInventoryRepository, never()).save(productInventory);
+    }
+
+    @Test
+    public void testDeleteProductDetails_ExistingProduct() {
         // Arrange
         Long productId = 1L;
         ProductInventory productInventory = createProduct(productId);
@@ -110,7 +152,7 @@ class ProductInventoryServiceTest {
     }
 
     @Test
-    void testDeleteProductDetails_NonExistingProduct() {
+    public void testDeleteProductDetails_NonExistingProduct() {
         // Arrange
         Long productId = 3L;
         when(productInventoryRepository.findById(productId)).thenReturn(Optional.empty());

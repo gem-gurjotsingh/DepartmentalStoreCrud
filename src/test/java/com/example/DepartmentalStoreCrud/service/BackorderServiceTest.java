@@ -32,18 +32,14 @@ public class BackorderServiceTest {
 
     @Test
     public void testGetAllBackorders() {
-        // Arrange
         List<Backorder> backorders = new ArrayList<>();
         backorders.add(new Backorder());
         backorders.add(new Backorder());
         when(backorderRepository.findAll()).thenReturn(backorders);
-
-        // Act
+        assertNotNull(backorders);
         List<Backorder> result = backorderService.getAllBackorders();
-
-        // Assert
         assertEquals(backorders, result);
-        assertEquals(backorders.size(), result.size());
+        assertEquals(2, result.size());
         verify(backorderRepository, times(1)).findAll();
     }
 
@@ -80,16 +76,12 @@ public class BackorderServiceTest {
 
     @Test
     public void testCreateBackorder() {
-        // Arrange
-        Backorder backorder = new Backorder();
+        Backorder backorder = createBackorder(1L);
 
         // Argument captor
         ArgumentCaptor<Backorder> backorderCaptor = ArgumentCaptor.forClass(Backorder.class);
 
-        // Act
-        backorderService.createBackorder(backorder);
-
-        // Assert
+        Backorder newBackorder = backorderService.createBackorder(backorder);
         verify(backorderRepository, times(1)).save(backorderCaptor.capture());
         assertEquals(backorder, backorderCaptor.getValue());
     }
@@ -98,7 +90,7 @@ public class BackorderServiceTest {
     public void testDeleteBackorder() {
         // Arrange
         Long backorderId = 1L;
-        Backorder backorder = new Backorder();
+        Backorder backorder = createBackorder(backorderId);
         when(backorderRepository.findById(backorderId)).thenReturn(Optional.of(backorder));
 
         //Argument captor
@@ -123,5 +115,12 @@ public class BackorderServiceTest {
         // Assert
         verify(backorderRepository, times(1)).findById(backorderId);
         verify(backorderRepository, never()).delete(any());
+    }
+
+    private Backorder createBackorder(Long backorderId) {
+        Backorder backorder = new Backorder();
+        backorder.setBackorderID(1L);
+        backorder.setOrder(null);
+        return backorder;
     }
 }

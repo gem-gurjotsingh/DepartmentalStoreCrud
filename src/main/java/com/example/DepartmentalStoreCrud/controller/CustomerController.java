@@ -22,9 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/customerDetails")
+@RequestMapping(path = "/customerDetails")
 public class CustomerController {
 
+    /**
+     * Autowired CustomerService
+     */
     @Autowired
     private CustomerService customerService;
 
@@ -38,9 +41,9 @@ public class CustomerController {
             @ApiResponse(responseCode = "200", description = "Customers fetched successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping
-    public List<Customer> getAllCustomers() {
-        return customerService.getAllCustomers();
+    @GetMapping(produces = "application/json")
+    public ResponseEntity<List<Customer>> getAllCustomers() {
+        return new ResponseEntity<>(customerService.getAllCustomers(), HttpStatus.OK);
     }
 
     /**
@@ -55,17 +58,17 @@ public class CustomerController {
             @ApiResponse(responseCode = "404", description = "Customer not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/{customerID}")
+    @GetMapping(path = "/{customerID}", produces = "application/json")
     public ResponseEntity<Customer> getCustomerById(
             @Parameter(description = "The ID of the customer to retrieve.", required = true)
             @PathVariable final Long customerID) {
-        return ResponseEntity.ok(customerService.getCustomerById(customerID));
+        return new ResponseEntity<>(customerService.getCustomerById(customerID), HttpStatus.OK);
     }
 
     /**
      * Retrieves all orders placed by a customer.
      *
-     * @param customerID The ID of the customer required.
+     * @param customerID The ID of the customer.
      * @return The orders placed by a customer.
      */
     @Operation(operationId = "getOrdersByCustomer", summary = "Get orders placed by a customer")
@@ -74,11 +77,11 @@ public class CustomerController {
             @ApiResponse(responseCode = "404", description = "No orders found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/{customerID}/orders")
+    @GetMapping(path = "/{customerID}/orders", produces = "application/json")
     public ResponseEntity<List<Order>> getOrdersByCustomer(
             @Parameter(description = "The ID of the customer required.", required = true)
             @PathVariable final Long customerID) {
-        return ResponseEntity.ok(customerService.getOrdersByCustomer(customerID));
+        return new ResponseEntity<>(customerService.getOrdersByCustomer(customerID), HttpStatus.OK);
     }
 
     /**
@@ -92,11 +95,11 @@ public class CustomerController {
             @ApiResponse(responseCode = "201", description = "Customer added successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping
+    @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> addCustomerDetails(
             @RequestBody(required = true) final Customer customer) {
         customerService.addCustomerDetails(customer);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Customer added successfully.");
+        return new ResponseEntity<>("Customer added successfully", HttpStatus.CREATED);
     }
 
     /**
@@ -112,13 +115,13 @@ public class CustomerController {
             @ApiResponse(responseCode = "404", description = "Customer not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PutMapping("/{customerID}")
+    @PutMapping(path = "/{customerID}", produces = "application/json", consumes = "application/json")
     public ResponseEntity<String> updateCustomerDetails(
             @Parameter(description = "The ID of the customer to update.", required = true)
             @PathVariable final Long customerID,
             @RequestBody(required = true) final Customer customer) {
         customerService.updateCustomerDetails(customerID, customer);
-        return ResponseEntity.ok("Customer updated successfully.");
+        return new ResponseEntity<>("Customer updated successfully with id: " + customerID, HttpStatus.OK);
     }
 
     /**
@@ -133,11 +136,11 @@ public class CustomerController {
             @ApiResponse(responseCode = "404", description = "Customer not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @DeleteMapping("/{customerID}")
+    @DeleteMapping(path = "/{customerID}")
     public ResponseEntity<String> deleteCustomerDetails(
             @Parameter(description = "The ID of the customer to delete.", required = true)
             @PathVariable final Long customerID) {
         customerService.deleteCustomerDetails(customerID);
-        return ResponseEntity.ok("Customer deleted successfully.");
+        return new ResponseEntity<>("Customer deleted successfully with id: " + customerID, HttpStatus.OK);
     }
 }

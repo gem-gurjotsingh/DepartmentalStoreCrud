@@ -19,9 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/backorders")
+@RequestMapping(path = "/backorders")
 public class BackorderController {
 
+    /**
+     * Autowired BackorderService
+     */
     @Autowired
     private BackorderService backorderService;
 
@@ -36,7 +39,7 @@ public class BackorderController {
             @ApiResponse(responseCode = "201", description = "Backorder created successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping
+    @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> createBackorder(@RequestBody(required = true) final Backorder backorder) {
         return ResponseEntity.status(HttpStatus.CREATED).body("Backorder created successfully.");
     }
@@ -51,10 +54,9 @@ public class BackorderController {
             @ApiResponse(responseCode = "200", description = "Backorders fetched successfully"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping
-    public List<Backorder> getAllBackorders() {
-        // Implementation
-        return backorderService.getAllBackorders();
+    @GetMapping(produces = "application/json")
+    public ResponseEntity<List<Backorder>> getAllBackorders() {
+        return new ResponseEntity<>(backorderService.getAllBackorders(), HttpStatus.OK);
     }
 
     /**
@@ -69,12 +71,11 @@ public class BackorderController {
             @ApiResponse(responseCode = "404", description = "Backorder not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/{backorderId}")
+    @GetMapping(path = "/{backorderId}", produces = "application/json")
     public ResponseEntity<Backorder> getBackorderById(
             @Parameter(description = "The ID of the backorder to retrieve.", required = true)
             @PathVariable final Long backorderId) {
-        Backorder backorder = backorderService.getBackorderById(backorderId);
-        return ResponseEntity.ok(backorder);
+        return ResponseEntity.ok(backorderService.getBackorderById(backorderId));
     }
 
     /**
@@ -89,7 +90,7 @@ public class BackorderController {
             @ApiResponse(responseCode = "404", description = "Backorder not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @DeleteMapping("/{backorderId}")
+    @DeleteMapping(path = "/{backorderId}")
     public ResponseEntity<String> deleteBackorder(
             @Parameter(description = "The ID of the backorder to delete.", required = true)
             @PathVariable final Long backorderId) {
