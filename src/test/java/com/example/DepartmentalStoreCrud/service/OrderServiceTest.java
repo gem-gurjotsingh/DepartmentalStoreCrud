@@ -39,6 +39,9 @@ public class OrderServiceTest {
     @Mock
     private BackorderRepository backorderRepository;
 
+    @Mock
+    private EmailSenderService emailSenderService;
+
     @InjectMocks
     private OrderService orderService;
 

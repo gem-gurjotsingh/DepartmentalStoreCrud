@@ -73,7 +73,7 @@ public class BackorderControllerTest {
     }
 
     @Test
-    void getBackorderByIdTest_BackorderFound() throws Exception {
+    void getBackorderByIdTest() throws Exception {
         Long backorderId = 1L;
         Backorder backorder = createBackorder();
         when(backorderService.getBackorderById(backorderId)).thenReturn(backorder);

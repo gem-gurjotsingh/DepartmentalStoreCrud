@@ -63,7 +63,7 @@ public class CustomerControllerTest {
     }
 
     @Test
-    void getCustomerByIDTest_CustomerFound() throws Exception {
+    void getCustomerByIDTest() throws Exception {
         Customer customer = createCustomer(1L);
         when(customerService.getCustomerById(anyLong())).thenReturn(customer);
         this.mockMvc.perform(get("/customerDetails/{customerID}", 1L))
@@ -85,7 +85,7 @@ public class CustomerControllerTest {
         orders.add(createOrder(2L));
         when(customerService.getOrdersByCustomer(anyLong())).thenReturn(orders);
 
-        mockMvc.perform(get("/customerDetails/{customerID}/orders", customerId))
+        this.mockMvc.perform(get("/customerDetails/{customerID}/orders", customerId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].orderID").exists())

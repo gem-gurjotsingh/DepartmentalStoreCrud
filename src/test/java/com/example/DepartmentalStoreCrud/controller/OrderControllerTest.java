@@ -56,7 +56,7 @@ public class OrderControllerTest {
 
         when(orderService.getAllOrders()).thenReturn(orders);
 
-        mockMvc.perform(get("/orderDetails"))
+        this.mockMvc.perform(get("/orderDetails"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.size()", is(orders.size())));
@@ -65,21 +65,20 @@ public class OrderControllerTest {
     }
 
     @Test
-    public void getOrderByIdTest_OrderNotFound() throws Exception {
-        Long nonExistingOrderId = 999L;
-        when(orderService.getOrderById(nonExistingOrderId)).thenReturn(null);
-
-        mockMvc.perform(get("/{orderID}", nonExistingOrderId))
-                .andExpect(status().isNotFound());
-
-        verify(orderService, never()).getOrderById(nonExistingOrderId);
+    public void getOrderByIdTest() throws Exception {
+        Order order = createOrder(1L);
+        when(orderService.getOrderById(anyLong())).thenReturn(order);
+        this.mockMvc.perform(get("/orderDetails/{orderID}", 1L))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+        verify(orderService, times(1)).getOrderById(1L);
     }
 
     @Test
     public void addOrderDetailsTest() throws Exception {
         Order order = createOrder(1L);
 
-        mockMvc.perform(post("/orderDetails")
+        this.mockMvc.perform(post("/orderDetails")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(order)))
                 .andExpect(status().isCreated())
@@ -93,7 +92,7 @@ public class OrderControllerTest {
         Long orderId = 1L;
         Order order = createOrder(orderId);
 
-        mockMvc.perform(put("/orderDetails/{orderID}", orderId)
+        this.mockMvc.perform(put("/orderDetails/{orderID}", orderId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(order)))
                 .andExpect(status().isOk())
@@ -106,7 +105,7 @@ public class OrderControllerTest {
     public void deleteOrderDetailsTest() throws Exception {
         Long orderId = 1L;
 
-        mockMvc.perform(delete("/orderDetails/{orderID}", orderId))
+        this.mockMvc.perform(delete("/orderDetails/{orderID}", orderId))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Order deleted successfully."));
 

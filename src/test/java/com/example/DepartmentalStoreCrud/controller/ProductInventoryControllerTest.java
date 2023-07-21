@@ -64,7 +64,7 @@ public class ProductInventoryControllerTest {
     }
 
     @Test
-    void getProductByIdTest_ProductFound() throws Exception {
+    void getProductByIdTest() throws Exception {
         Long productId = 1L;
         ProductInventory product = createProduct(productId);
 
