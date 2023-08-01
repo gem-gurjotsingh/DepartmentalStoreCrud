@@ -1,4 +1,4 @@
-# DepartmentalStoreCrud
+# DepartmentalStoreSpring
 
 This is a departmental management system that tracks product inventory, customer information, and orders placed by the customers. The system allows customers to place orders for products, with support for backorders when inventory is unavailable.
 
@@ -12,22 +12,25 @@ This is a departmental management system that tracks product inventory, customer
 
 ## Requirements
 
-- Java 8 or higher
-- MySQL server 5.7 or higher
+- Java 11 or higher
+- MySQL server 8 or higher
 
 ## Features
 
 1. Product Inventory
    - Stores information about products, including ID, description, name, price, expiry, count, and availability.
    - Allows updating the inventory count and availability.
+   - Search for a product by its name.
+   - Add product info via excel.
 2. Customer
    - Stores customer details such as ID, full name, address, and contact number.
+   - Email and contact validation with regex.
 3. Order
    - Tracks orders with information like order ID, product ID, customer ID, order timestamp, and quantity.
-   - Supports placing orders for products, including backorders when inventory count is zero or availability is false.
+   - Supports placing orders for products, and also placing them as backorders when inventory count is zero or availability is false.
 4. Backorders
    - Keeps a record of orders for products that are currently unavailable.
-   - Allows prioritization of delivery for backorders.
+   - Backorders are removed when product quantity gets sufficient via cronjob.
 
 ## Technologies
 
@@ -36,6 +39,8 @@ The inventory management system is built using the following technologies:
 - Programming Language: Java
 - Database: MySQL
 - Frameworks/Libraries: Spring Boot
+- Testing: Postman
+- Swagger: http://localhost:9111/swagger-ui.html
 
 ## Setup
 
