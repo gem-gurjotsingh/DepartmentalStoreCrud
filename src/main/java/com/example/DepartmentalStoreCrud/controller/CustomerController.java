@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/customerDetails")
+@RequestMapping(path = "/customers")
 public class CustomerController {
 
     /**

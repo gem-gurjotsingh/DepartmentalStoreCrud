@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/orderDetails")
+@RequestMapping(path = "/orders")
 public class OrderController {
 
     /**

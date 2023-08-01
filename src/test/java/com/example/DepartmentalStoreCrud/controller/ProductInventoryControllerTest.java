@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -55,7 +56,7 @@ public class ProductInventoryControllerTest {
 
         when(productInventoryService.getAllProducts()).thenReturn(products);
 
-        mockMvc.perform(get("/productDetails"))
+        mockMvc.perform(get("/products"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.size()", is(products.size())));
@@ -70,7 +71,7 @@ public class ProductInventoryControllerTest {
 
         when(productInventoryService.getProductById(productId)).thenReturn(product);
 
-        mockMvc.perform(get("/productDetails/{productID}", productId))
+        mockMvc.perform(get("/products/{productID}", productId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.productID", is(product.getProductID().intValue())))
@@ -85,7 +86,7 @@ public class ProductInventoryControllerTest {
     void addProductDetailsTest() throws Exception {
         ProductInventory product = createProduct(1L);
 
-        mockMvc.perform(post("/productDetails")
+        mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isCreated())
@@ -99,7 +100,7 @@ public class ProductInventoryControllerTest {
         Long productId = 1L;
         ProductInventory product = createProduct(productId);
 
-        mockMvc.perform(put("/productDetails/{productID}", productId)
+        mockMvc.perform(put("/products/{productID}", productId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(product)))
                 .andExpect(status().isOk())
@@ -112,11 +113,33 @@ public class ProductInventoryControllerTest {
     void deleteProductDetailsTest() throws Exception {
         Long productId = 1L;
 
-        mockMvc.perform(delete("/productDetails/{productID}", productId))
+        mockMvc.perform(delete("/products/{productID}", productId))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Product deleted successfully."));
 
         verify(productInventoryService, times(1)).deleteProductDetails(productId);
+    }
+
+    @Test
+    void testSearchProducts() throws Exception {
+        List<ProductInventory> productInventory = new ArrayList<>();
+        productInventory.add(createProduct(1L, "Furniture", "Office chair", 100.0, 10));
+        productInventory.add(createProduct(2L, "Furniture", "Gaming chair", 100.0, 10));
+        productInventory.add(createProduct(3L, "Jacket", "Puff Jacket", 100.0, 10));
+
+        List<ProductInventory> result = new ArrayList<>();
+        result.add(productInventory.get(0));
+        result.add(productInventory.get(1));
+        when(productInventoryService.searchProducts("chair")).thenReturn(result);
+        mockMvc.perform(get("/products/search")
+                        .param("name", "chair"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].productName", is("Office chair")))
+                .andExpect(jsonPath("$[1].productName", is("Gaming chair")));
+
+        verify(productInventoryService, times(1)).searchProducts("chair");
     }
 
     private ProductInventory createProduct(Long productId) {
@@ -127,6 +150,16 @@ public class ProductInventoryControllerTest {
         product.setPrice(9.99); // Set the desired price
         product.setProductQuantity(10); // Set the desired count
 
+        return product;
+    }
+
+    private ProductInventory createProduct(Long productId, String productDesc, String productName, double price, int productQuantity) {
+        ProductInventory product = new ProductInventory();
+        product.setProductID(productId);
+        product.setProductDesc(productDesc);
+        product.setProductName(productName);
+        product.setPrice(price);
+        product.setProductQuantity(productQuantity);
         return product;
     }
 }

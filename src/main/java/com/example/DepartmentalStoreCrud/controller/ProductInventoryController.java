@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,13 +17,11 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-
+import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/productDetails")
+@RequestMapping(path = "/products")
 public class ProductInventoryController {
 
     /**
@@ -43,6 +43,27 @@ public class ProductInventoryController {
     @GetMapping(produces = "application/json")
     public ResponseEntity<List<ProductInventory>> getAllProducts() {
         return new ResponseEntity<>(productInventoryService.getAllProducts(), HttpStatus.OK);
+    }
+
+    /**
+     * Retrieves the products on the basis of page size and page number provided.
+     *
+     * @param pageNumber The page number to be viewed.
+     * @param pageSize The size of that page.
+     * @return List of products.
+     */
+    @Operation(operationId = "getPageProducts", summary = "Get products on a page")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products fetched successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping(path = "/page/{pageNumber}/{pageSize}", produces = "application/json")
+    public List<ProductInventory> getProductsPagination(
+            @Parameter(description = "The page number to view", required = true)
+            @PathVariable final Integer pageNumber,
+            @Parameter(description = "The size of the page", required = true)
+            @PathVariable final Integer pageSize) {
+        return productInventoryService.getProductsPagination(pageNumber, pageSize);
     }
 
     /**
@@ -120,5 +141,23 @@ public class ProductInventoryController {
             @PathVariable final Long productID) {
         productInventoryService.deleteProductDetails(productID);
         return ResponseEntity.ok("Product deleted successfully.");
+    }
+
+    /**
+     * Searches a product by name.
+     *
+     * @param productName Name of the product
+     * @return A response entity indicating the status of the operation.
+     */
+    @Operation(operationId = "searchProducts", summary = "Search for products by name")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Products fetched successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping(path = "/search", produces = "application/json")
+    public ResponseEntity<List<ProductInventory>> searchProducts(
+            @Parameter(description = "The name of the product to search for", required = true)
+            @RequestParam(value = "name") final String productName) {
+        return ResponseEntity.ok(productInventoryService.searchProducts(productName));
     }
 }

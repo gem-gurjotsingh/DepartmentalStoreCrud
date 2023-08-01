@@ -11,6 +11,7 @@ import javax.persistence.Table;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -37,6 +38,7 @@ public class Order {
     private Customer customer;
 
     @Column(name = "orderTimestamp")
+    @CreationTimestamp
     private LocalDateTime orderTimestamp;
 
     @Column(name = "orderQuantity")

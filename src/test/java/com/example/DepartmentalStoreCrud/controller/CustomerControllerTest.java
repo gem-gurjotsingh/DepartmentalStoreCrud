@@ -55,7 +55,7 @@ public class CustomerControllerTest {
         customers.add(createCustomer(1L)); // Sample customer with ID 1L
         customers.add(createCustomer(2L));
         when(customerService.getAllCustomers()).thenReturn(customers);
-        this.mockMvc.perform(get("/customerDetails"))
+        this.mockMvc.perform(get("/customers"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.size()", is(customers.size())));
@@ -66,7 +66,7 @@ public class CustomerControllerTest {
     void getCustomerByIDTest() throws Exception {
         Customer customer = createCustomer(1L);
         when(customerService.getCustomerById(anyLong())).thenReturn(customer);
-        this.mockMvc.perform(get("/customerDetails/{customerID}", 1L))
+        this.mockMvc.perform(get("/customers/{customerID}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.fullName", is(customer.getFullName())))
@@ -85,7 +85,7 @@ public class CustomerControllerTest {
         orders.add(createOrder(2L));
         when(customerService.getOrdersByCustomer(anyLong())).thenReturn(orders);
 
-        this.mockMvc.perform(get("/customerDetails/{customerID}/orders", customerId))
+        this.mockMvc.perform(get("/customers/{customerID}/orders", customerId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].orderID").exists())
@@ -118,7 +118,7 @@ public class CustomerControllerTest {
     void addCustomer() throws Exception {
         Customer customer = createCustomer(1L);
         when(customerService.addCustomerDetails(any(Customer.class))).thenReturn(customer);
-        this.mockMvc.perform(post("/customerDetails")
+        this.mockMvc.perform(post("/customers")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(customer)))
                 .andExpect(status().isCreated())
@@ -130,7 +130,7 @@ public class CustomerControllerTest {
     void updateCustomer() throws Exception {
         Customer customer = createCustomer(1L);
         when(customerService.updateCustomerDetails(anyLong(), any(Customer.class))).thenReturn(customer);
-        this.mockMvc.perform(put("/customerDetails/{customerID}", 1L)
+        this.mockMvc.perform(put("/customers/{customerID}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(customer)))
                 .andExpect(status().isOk())
@@ -141,7 +141,7 @@ public class CustomerControllerTest {
     @Test
     void deleteCustomerTest() throws Exception {
         doNothing().when(customerService).deleteCustomerDetails(anyLong());
-        this.mockMvc.perform(delete("/customerDetails/{customerID}", 2L))
+        this.mockMvc.perform(delete("/customers/{customerID}", 2L))
                 .andExpect(status().isOk());
          verify(customerService, times(1)).deleteCustomerDetails(2L);
     }

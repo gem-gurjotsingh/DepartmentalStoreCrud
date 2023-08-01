@@ -147,8 +147,9 @@ public class OrderService {
         applyDiscount(order);
         String customerEmail = order.getCustomer().getEmailID();
         String customerName = order.getCustomer().getFullName();
-        senderService.sendSimpleEmail(customerEmail,
-                "Order confirmation", "Hi " + customerName + ", your order has been placed successfully. Thanks for shopping with us!");
+        String subject = "Order confirmation";
+        String body = "Hi " + customerName + ", your order has been placed successfully. Thanks for shopping with us!";
+        senderService.sendSimpleEmail(customerEmail, subject, body);
         log.info("Mail sent successfully");
         checkIfBackorder(order);
         return orderRepo.save(order);

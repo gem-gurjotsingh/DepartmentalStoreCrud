@@ -8,12 +8,16 @@ import com.example.DepartmentalStoreCrud.repository.OrderRepository;
 import com.example.DepartmentalStoreCrud.repository.ProductInventoryRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -46,6 +50,20 @@ public class ProductInventoryService {
     public List<ProductInventory> getAllProducts() {
         log.info("Products list fetched");
         return productRepo.findAll();
+    }
+
+    /**
+     * To get product list in pages.
+     *
+     * @param pageNumber The number of pages
+     * @param pageSize The size of each page
+     * @return Pages of products
+     */
+    public List<ProductInventory> getProductsPagination(final Integer pageNumber, final Integer pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<ProductInventory> pageProduct = productRepo.findAll(pageable);
+        log.info("Pagination done");
+        return pageProduct.getContent();
     }
 
     /**
@@ -137,6 +155,7 @@ public class ProductInventoryService {
             int quantity = existingProduct.getProductQuantity();
             removeBackorders(quantity, existingProduct);
         }
+        log.info("Cronjob successful");
     }
 
     /**
@@ -152,5 +171,19 @@ public class ProductInventoryService {
         }
         log.info("Product deleted with id-" + productID);
         productRepo.deleteById(productID);
+    }
+
+    /**
+     * To search for a product by its name.
+     *
+     * @param productName - Name of the product
+     * @return List of products
+     */
+    public List<ProductInventory> searchProducts(final String productName) {
+        List<ProductInventory> products = productRepo.findAll();
+        log.info("Search successful");
+        return products.stream()
+                .filter(product -> product.getProductName().toLowerCase().contains(productName.toLowerCase()))
+                .collect(Collectors.toList());
     }
 }

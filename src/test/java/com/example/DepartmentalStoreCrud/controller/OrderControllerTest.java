@@ -56,7 +56,7 @@ public class OrderControllerTest {
 
         when(orderService.getAllOrders()).thenReturn(orders);
 
-        this.mockMvc.perform(get("/orderDetails"))
+        this.mockMvc.perform(get("/orders"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.size()", is(orders.size())));
@@ -68,7 +68,7 @@ public class OrderControllerTest {
     public void getOrderByIdTest() throws Exception {
         Order order = createOrder(1L);
         when(orderService.getOrderById(anyLong())).thenReturn(order);
-        this.mockMvc.perform(get("/orderDetails/{orderID}", 1L))
+        this.mockMvc.perform(get("/orders/{orderID}", 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));
         verify(orderService, times(1)).getOrderById(1L);
@@ -78,7 +78,7 @@ public class OrderControllerTest {
     public void addOrderDetailsTest() throws Exception {
         Order order = createOrder(1L);
 
-        this.mockMvc.perform(post("/orderDetails")
+        this.mockMvc.perform(post("/orders")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(order)))
                 .andExpect(status().isCreated())
@@ -92,7 +92,7 @@ public class OrderControllerTest {
         Long orderId = 1L;
         Order order = createOrder(orderId);
 
-        this.mockMvc.perform(put("/orderDetails/{orderID}", orderId)
+        this.mockMvc.perform(put("/orders/{orderID}", orderId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(order)))
                 .andExpect(status().isOk())
@@ -105,7 +105,7 @@ public class OrderControllerTest {
     public void deleteOrderDetailsTest() throws Exception {
         Long orderId = 1L;
 
-        this.mockMvc.perform(delete("/orderDetails/{orderID}", orderId))
+        this.mockMvc.perform(delete("/orders/{orderID}", orderId))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Order deleted successfully."));
 
