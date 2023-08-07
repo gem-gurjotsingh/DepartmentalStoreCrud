@@ -1,7 +1,8 @@
-package com.example.DepartmentalStoreCrud.service;
+package com.example.DepartmentalStoreCrud.unit.service;
 
 import com.example.DepartmentalStoreCrud.bean.ProductInventory;
 import com.example.DepartmentalStoreCrud.repository.ProductInventoryRepository;
+import com.example.DepartmentalStoreCrud.service.ProductInventoryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

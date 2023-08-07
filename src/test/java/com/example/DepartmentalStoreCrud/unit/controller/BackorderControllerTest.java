@@ -1,6 +1,8 @@
-package com.example.DepartmentalStoreCrud.controller;
+package com.example.DepartmentalStoreCrud.unit.controller;
 
 import com.example.DepartmentalStoreCrud.bean.Backorder;
+import com.example.DepartmentalStoreCrud.controller.BackorderController;
+import com.example.DepartmentalStoreCrud.repository.BackorderRepository;
 import com.example.DepartmentalStoreCrud.service.BackorderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +19,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.*;
@@ -32,6 +35,9 @@ public class BackorderControllerTest {
 
     @Mock
     private BackorderService backorderService;
+
+    @Mock
+    private BackorderRepository backorderRepository;
 
     @InjectMocks
     private BackorderController backorderController;
@@ -72,8 +78,9 @@ public class BackorderControllerTest {
         verify(backorderService, times(1)).getAllBackorders();
     }
 
+    //positive case - valid backorder id
     @Test
-    void getBackorderByIdTest() throws Exception {
+    void getBackorderByIdTest_backorderFound() throws Exception {
         Long backorderId = 1L;
         Backorder backorder = createBackorder();
         when(backorderService.getBackorderById(backorderId)).thenReturn(backorder);
@@ -85,6 +92,16 @@ public class BackorderControllerTest {
         verify(backorderService, times(1)).getBackorderById(backorderId);
     }
 
+    //negative case - invalid backorder id
+    @Test
+    void getBackorderByIdTest_BackorderNotFound() throws Exception {
+        Long backorderID = 1L;
+        when(backorderService.getBackorderById(backorderID)).thenReturn(null);
+
+        mockMvc.perform(get("/{backorderId}", backorderID))
+                .andExpect(status().isNotFound());
+    }
+
     @Test
     void deleteBackorderTest() throws Exception {
         Long backorderId = 1L;
@@ -94,6 +111,17 @@ public class BackorderControllerTest {
                 .andExpect(status().isOk());
 
         verify(backorderService, times(1)).deleteBackorder(backorderId);
+    }
+
+    @Test
+    void deleteBackorderTest_backorderNotFound() throws Exception {
+        Long backorderId = 1L;
+        doNothing().when(backorderService).deleteBackorder(backorderId);
+
+        mockMvc.perform(delete("/{backorderId}", backorderId))
+                .andExpect(status().isNotFound());
+
+        verify(backorderService, never()).deleteBackorder(backorderId);
     }
 
     private Backorder createBackorder() {

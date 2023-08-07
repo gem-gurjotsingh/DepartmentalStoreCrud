@@ -1,6 +1,7 @@
-package com.example.DepartmentalStoreCrud.controller;
+package com.example.DepartmentalStoreCrud.unit.controller;
 
 import com.example.DepartmentalStoreCrud.bean.ProductInventory;
+import com.example.DepartmentalStoreCrud.controller.ProductInventoryController;
 import com.example.DepartmentalStoreCrud.service.ProductInventoryService;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -82,6 +83,17 @@ public class ProductInventoryControllerTest {
         verify(productInventoryService, times(1)).getProductById(productId);
     }
 
+    //negative case
+    @Test
+    void getProductByIdTest_ProductNotFound() throws Exception {
+        Long nonExistentProductId = 999L;
+
+        when(productInventoryService.getProductById(nonExistentProductId)).thenReturn(null);
+
+        mockMvc.perform(get("/{productID}", nonExistentProductId))
+                .andExpect(status().isNotFound());
+    }
+
     @Test
     void addProductDetailsTest() throws Exception {
         ProductInventory product = createProduct(1L);
@@ -109,6 +121,22 @@ public class ProductInventoryControllerTest {
         verify(productInventoryService, times(1)).updateProductDetails(eq(productId), any(ProductInventory.class));
     }
 
+    //negative case
+    @Test
+    void updateProductDetailsTest_NonExistentProduct() throws Exception {
+        Long nonExistentProductId = 999L;
+        ProductInventory product = createProduct(nonExistentProductId);
+
+        when(productInventoryService.updateProductDetails(nonExistentProductId, product)).thenReturn(null);
+
+        mockMvc.perform(put("/{productID}", nonExistentProductId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(product)))
+                .andExpect(status().isNotFound());
+
+        verify(productInventoryService, never()).updateProductDetails(nonExistentProductId, product);
+    }
+
     @Test
     void deleteProductDetailsTest() throws Exception {
         Long productId = 1L;
@@ -118,6 +146,19 @@ public class ProductInventoryControllerTest {
                 .andExpect(content().string("Product deleted successfully."));
 
         verify(productInventoryService, times(1)).deleteProductDetails(productId);
+    }
+
+    //negative case
+    @Test
+    void deleteProductDetailsTest_NonExistentProduct() throws Exception {
+        Long nonExistentProductId = 999L;
+
+        doNothing().when(productInventoryService).deleteProductDetails(nonExistentProductId);
+
+        mockMvc.perform(delete("/{productID}", nonExistentProductId))
+                .andExpect(status().isNotFound());
+
+        verify(productInventoryService, never()).deleteProductDetails(nonExistentProductId);
     }
 
     @Test

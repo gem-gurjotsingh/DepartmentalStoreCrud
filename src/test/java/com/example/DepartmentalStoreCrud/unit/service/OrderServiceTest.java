@@ -1,4 +1,4 @@
-package com.example.DepartmentalStoreCrud.service;
+package com.example.DepartmentalStoreCrud.unit.service;
 
 import com.example.DepartmentalStoreCrud.bean.Backorder;
 import com.example.DepartmentalStoreCrud.bean.Customer;
@@ -8,6 +8,9 @@ import com.example.DepartmentalStoreCrud.repository.BackorderRepository;
 import com.example.DepartmentalStoreCrud.repository.CustomerRepository;
 import com.example.DepartmentalStoreCrud.repository.OrderRepository;
 import com.example.DepartmentalStoreCrud.repository.ProductInventoryRepository;
+import com.example.DepartmentalStoreCrud.service.BackorderService;
+import com.example.DepartmentalStoreCrud.service.EmailSenderService;
+import com.example.DepartmentalStoreCrud.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;

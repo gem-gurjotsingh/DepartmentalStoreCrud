@@ -1,12 +1,14 @@
-package com.example.DepartmentalStoreCrud.controller;
+package com.example.DepartmentalStoreCrud.unit.controller;
 
 import com.example.DepartmentalStoreCrud.bean.Customer;
 import com.example.DepartmentalStoreCrud.bean.Order;
 import com.example.DepartmentalStoreCrud.bean.ProductInventory;
+import com.example.DepartmentalStoreCrud.controller.CustomerController;
 import com.example.DepartmentalStoreCrud.service.CustomerService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +22,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.Optional;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -52,7 +55,7 @@ public class CustomerControllerTest {
     @Test
     void getAllCustomersTest() throws Exception {
         List<Customer> customers = new ArrayList<>();
-        customers.add(createCustomer(1L)); // Sample customer with ID 1L
+        customers.add(createCustomer(1L));
         customers.add(createCustomer(2L));
         when(customerService.getAllCustomers()).thenReturn(customers);
         this.mockMvc.perform(get("/customers"))
@@ -74,6 +77,17 @@ public class CustomerControllerTest {
                 .andExpect(jsonPath("$.contactNumber", is(customer.getContactNumber())))
                 .andExpect(jsonPath("$.emailID", is(customer.getEmailID())));
         verify(customerService, times(1)).getCustomerById(1L);
+    }
+
+    //negative case
+    @Test
+    void getCustomerByIDTest_CustomerNotFound() throws Exception {
+        Long invalidCustomerId = 100L;
+        when(customerService.getCustomerById(invalidCustomerId)).thenReturn(null);
+        mockMvc.perform(get("/{customerID}", invalidCustomerId))
+                .andExpect(status().isNotFound());
+
+        verify(customerService, never()).getCustomerById(invalidCustomerId);
     }
 
     @Test
@@ -117,13 +131,18 @@ public class CustomerControllerTest {
     @Test
     void addCustomer() throws Exception {
         Customer customer = createCustomer(1L);
-        when(customerService.addCustomerDetails(any(Customer.class))).thenReturn(customer);
+        ArgumentCaptor<Customer> customerCaptor = ArgumentCaptor.forClass(Customer.class);
+        when(customerService.addCustomerDetails(customerCaptor.capture())).thenReturn(customer);
         this.mockMvc.perform(post("/customers")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(customer)))
                 .andExpect(status().isCreated())
                 .andExpect(content().string("Customer added successfully"));
-        verify(customerService, times(1)).addCustomerDetails(customer);
+
+        assertThat(customerCaptor.getValue().getFullName(), is("John Doe"));
+        assertThat(customerCaptor.getValue().getAddress(), is("123 Main Street"));
+        assertThat(customerCaptor.getValue().getContactNumber(), is("+919417665710"));
+        assertThat(customerCaptor.getValue().getEmailID(), is("johndoe@gmail.com"));
     }
 
     @Test
@@ -138,12 +157,41 @@ public class CustomerControllerTest {
         verify(customerService, times(1)).updateCustomerDetails(customer.getCustomerID(), customer);
     }
 
+    //negative case
+    @Test
+    void updateCustomerTest_NonExistentCustomer() throws Exception {
+        Long nonExistentCustomerId = 999L;
+
+        Customer customer = createCustomer(nonExistentCustomerId);
+
+        when(customerService.updateCustomerDetails(nonExistentCustomerId, customer)).thenReturn(null);
+
+        mockMvc.perform(put("/{customerID}", nonExistentCustomerId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(customer)))
+                .andExpect(status().isNotFound());
+
+        verify(customerService, never()).updateCustomerDetails(nonExistentCustomerId, customer);
+    }
+
     @Test
     void deleteCustomerTest() throws Exception {
         doNothing().when(customerService).deleteCustomerDetails(anyLong());
         this.mockMvc.perform(delete("/customers/{customerID}", 2L))
                 .andExpect(status().isOk());
          verify(customerService, times(1)).deleteCustomerDetails(2L);
+    }
+
+    //negative case
+    @Test
+    void deleteCustomerTest_CustomerNotFound() throws Exception {
+        Long invalidCustomerId = 999L;
+        doNothing().when(customerService).deleteCustomerDetails(invalidCustomerId);
+
+        mockMvc.perform(delete("/{customerID}", invalidCustomerId))
+                .andExpect(status().isNotFound());
+
+        verify(customerService, never()).deleteCustomerDetails(invalidCustomerId);
     }
 
     private Customer createCustomer(Long customerId) {

@@ -1,8 +1,9 @@
-package com.example.DepartmentalStoreCrud.controller;
+package com.example.DepartmentalStoreCrud.unit.controller;
 
 import com.example.DepartmentalStoreCrud.bean.Customer;
 import com.example.DepartmentalStoreCrud.bean.Order;
 import com.example.DepartmentalStoreCrud.bean.ProductInventory;
+import com.example.DepartmentalStoreCrud.controller.OrderController;
 import com.example.DepartmentalStoreCrud.service.OrderService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,6 +75,17 @@ public class OrderControllerTest {
         verify(orderService, times(1)).getOrderById(1L);
     }
 
+    //negative case
+    @Test
+    void getOrderByIdTest_OrderNotFound() throws Exception {
+        Long nonExistentOrderId = 999L;
+
+        when(orderService.getOrderById(nonExistentOrderId)).thenReturn(null);
+
+        mockMvc.perform(get("/{orderID}", nonExistentOrderId))
+                .andExpect(status().isNotFound());
+    }
+
     @Test
     public void addOrderDetailsTest() throws Exception {
         Order order = createOrder(1L);
@@ -101,6 +113,22 @@ public class OrderControllerTest {
         verify(orderService, times(1)).updateOrderDetails(eq(orderId), any(Order.class));
     }
 
+    //negative case
+    @Test
+    void updateOrderDetailsTest_NonExistentOrder() throws Exception {
+        Long nonExistentOrderId = 999L;
+        Order order = createOrder(nonExistentOrderId);
+
+        when(orderService.updateOrderDetails(nonExistentOrderId, order)).thenReturn(null);
+
+        mockMvc.perform(put("/{orderID}", nonExistentOrderId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(order)))
+                .andExpect(status().isNotFound());
+
+        verify(orderService, never()).updateOrderDetails(nonExistentOrderId, order);
+    }
+
     @Test
     public void deleteOrderDetailsTest() throws Exception {
         Long orderId = 1L;
@@ -110,6 +138,19 @@ public class OrderControllerTest {
                 .andExpect(content().string("Order deleted successfully."));
 
         verify(orderService, times(1)).deleteOrderDetails(orderId);
+    }
+
+    //negative case
+    @Test
+    void deleteOrderDetailsTest_NonExistentOrder() throws Exception {
+        Long nonExistentOrderId = 999L;
+
+        doNothing().when(orderService).deleteOrderDetails(nonExistentOrderId);
+
+        mockMvc.perform(delete("/{orderID}", nonExistentOrderId))
+                .andExpect(status().isNotFound());
+
+        verify(orderService, never()).deleteOrderDetails(nonExistentOrderId);
     }
 
     private Order createOrder(Long orderId) {
