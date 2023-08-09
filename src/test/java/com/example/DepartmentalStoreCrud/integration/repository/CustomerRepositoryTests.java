@@ -33,7 +33,7 @@ public class CustomerRepositoryTests {
     }
 
     @Test
-    void testGetCustomerbyid() {
+    void testGetCustomerbyId() {
         Customer customer = createCustomer(1L,"Gurjot", "gurjot@gmail.com",
                 "+919765412345", "123 Nangal");
         customerRepository.save(customer);
@@ -50,11 +50,13 @@ public class CustomerRepositoryTests {
         Customer customer = createCustomer(1L,"Gurjot", "gurjot@gmail.com",
                 "+919765412345", "123 Nangal");
         customerRepository.save(customer);
+        Customer foundCustomer = customerRepository.findById(1L).get();
         assertEquals(1, customerRepository.findAll().size());
-        assertEquals("Gurjot", customer.getFullName());
-        assertEquals("gurjot@gmail.com", customer.getEmailID());
-        assertEquals("+919765412345", customer.getContactNumber());
-        assertEquals("123 Nangal", customer.getAddress());
+        assertNotNull(foundCustomer);
+        assertEquals("Gurjot", foundCustomer.getFullName());
+        assertEquals("gurjot@gmail.com", foundCustomer.getEmailID());
+        assertEquals("+919765412345", foundCustomer.getContactNumber());
+        assertEquals("123 Nangal", foundCustomer.getAddress());
     }
 
     @Test

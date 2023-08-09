@@ -6,12 +6,15 @@ import com.example.DepartmentalStoreCrud.bean.ProductInventory;
 import com.example.DepartmentalStoreCrud.repository.CustomerRepository;
 import com.example.DepartmentalStoreCrud.repository.OrderRepository;
 import com.example.DepartmentalStoreCrud.repository.ProductInventoryRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -29,8 +32,10 @@ public class OrderRepositoryTests {
     @Autowired
     private CustomerRepository customerRepository;
 
-    @Test
-    void testGetAllOrders() {
+    private ProductInventory productInventory;
+
+    @BeforeEach
+    void setup() {
         ProductInventory product = createProduct(1L, "Product 1", "Description 1", 10, 100);
         productInventoryRepository.save(product);
 
@@ -39,20 +44,19 @@ public class OrderRepositoryTests {
 
         Order order = createOrder(1L, product, customer, LocalDateTime.now(), 5, 0.0);
         orderRepository.save(order);
+
+        productInventory = product;
+    }
+
+    @Test
+    void testGetAllOrders() {
+        assertNotNull(orderRepository);
         assertEquals(1, orderRepository.findAll().size());
     }
 
     @Test
     void testGetOrderById() {
-        ProductInventory product = createProduct(1L, "Product 1", "Description 1", 10, 100);
-        productInventoryRepository.save(product);
-
-        Customer customer = createCustomer(1L,"Gurjot", "gurjot@gmail.com", "+919765412345", "123 Nangal");
-        customerRepository.save(customer);
-
-        Order order = createOrder(1L, product, customer, LocalDateTime.now(), 5, 0.0);
-        orderRepository.save(order);
-        Order foundOrder = orderRepository.findById(1L).orElse(null);
+        Order foundOrder = orderRepository.findById(1L).get();
         assertNotNull(foundOrder);
         assertEquals(1L, foundOrder.getProductInventory().getProductID());
         assertEquals(1L, foundOrder.getCustomer().getCustomerID());
@@ -62,16 +66,8 @@ public class OrderRepositoryTests {
 
     @Test
     void testSaveOrder() {
-        ProductInventory product = createProduct(1L, "Product 1", "Description 1", 10, 100);
-        productInventoryRepository.save(product);
-
-        Customer customer = createCustomer(1L,"Gurjot", "gurjot@gmail.com", "+919765412345", "123 Nangal");
-        customerRepository.save(customer);
-
-        Order order = createOrder(1L, product, customer, LocalDateTime.now(), 5, 0.0);
-        orderRepository.save(order);
         assertEquals(1, orderRepository.findAll().size());
-        Order savedOrder = orderRepository.findById(1L).orElse(null);
+        Order savedOrder = orderRepository.findById(1L).get();
         assertNotNull(savedOrder);
         assertEquals(1L, savedOrder.getProductInventory().getProductID());
         assertEquals(1L, savedOrder.getCustomer().getCustomerID());
@@ -81,16 +77,23 @@ public class OrderRepositoryTests {
 
     @Test
     void testDeleteOrderById() {
-        ProductInventory product = createProduct(1L, "Product 1", "Description 1", 10, 100);
-        productInventoryRepository.save(product);
-
-        Customer customer = createCustomer(1L,"Gurjot", "gurjot@gmail.com", "+919765412345", "123 Nangal");
-        customerRepository.save(customer);
-
-        Order order = createOrder(1L, product, customer, LocalDateTime.now(), 5, 0.0);
-        orderRepository.save(order);
         orderRepository.deleteById(1L);
         assertEquals(0, orderRepository.findAll().size());
+    }
+
+    @Test
+    void testFindOrdersByCustomer() {
+        List<Order> orderList = orderRepository.findByCustomer_CustomerID(1L);
+        assertNotNull(orderList);
+        assertEquals(1, orderList.size());
+    }
+
+    @Test
+    void testFindOrdersByProduct() {
+        List<Order> orderList = orderRepository.findByProductInventory(productInventory);
+        assertNotNull(orderList);
+        assertEquals(1, orderList.size());
+        assertEquals("Product 1", orderList.get(0).getProductInventory().getProductName());
     }
 
     private ProductInventory createProduct(Long id, String name, String desc, double price, int quantity) {

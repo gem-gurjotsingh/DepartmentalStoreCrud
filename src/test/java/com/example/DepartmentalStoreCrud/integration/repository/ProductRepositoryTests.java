@@ -46,11 +46,13 @@ public class ProductRepositoryTests {
     void testSaveProduct() {
         ProductInventory product = createProduct(1L, "Product 1", "Description 1", 10.5, 100);
         productInventoryRepository.save(product);
+        ProductInventory foundProduct = productInventoryRepository.findById(1L).get();
         assertEquals(1, productInventoryRepository.findAll().size());
-        assertEquals("Product 1", product.getProductName());
-        assertEquals("Description 1", product.getProductDesc());
-        assertEquals(10.5, product.getPrice());
-        assertEquals(100, product.getProductQuantity());
+        assertNotNull(foundProduct);
+        assertEquals("Product 1", foundProduct.getProductName());
+        assertEquals("Description 1", foundProduct.getProductDesc());
+        assertEquals(10.5, foundProduct.getPrice());
+        assertEquals(100, foundProduct.getProductQuantity());
     }
 
     @Test

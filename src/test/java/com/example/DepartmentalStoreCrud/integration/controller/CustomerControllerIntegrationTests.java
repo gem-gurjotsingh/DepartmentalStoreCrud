@@ -39,7 +39,7 @@ public class CustomerControllerIntegrationTests {
         mockMvc.perform(MockMvcRequestBuilders.get("/customers"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.size()", is(customerList.size())));
+                .andExpect(jsonPath("$.size()", is(customerRepository.findAll().size())));
     }
 
     @Test
