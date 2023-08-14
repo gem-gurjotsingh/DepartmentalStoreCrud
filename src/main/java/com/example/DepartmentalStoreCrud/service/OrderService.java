@@ -51,12 +51,6 @@ public class OrderService {
     private BackorderRepository backorderRepo;
 
     /**
-     * Autowired EmailSenderService
-     */
-    @Autowired
-    private EmailSenderService senderService;
-
-    /**
      * To get List of all orders placed by customers.
      *
      * @return List of Orders
@@ -145,12 +139,6 @@ public class OrderService {
     public Order addOrderDetails(final Order order) {
         fetchOtherEntities(order);
         applyDiscount(order);
-        String customerEmail = order.getCustomer().getEmailID();
-        String customerName = order.getCustomer().getFullName();
-        String subject = "Order confirmation";
-        String body = "Hi " + customerName + ", your order has been placed successfully. Thanks for shopping with us!";
-        senderService.sendSimpleEmail(customerEmail, subject, body);
-        log.info("Mail sent successfully");
         checkIfBackorder(order);
         return orderRepo.save(order);
     }

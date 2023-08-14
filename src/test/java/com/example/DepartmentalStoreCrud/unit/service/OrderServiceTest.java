@@ -9,7 +9,6 @@ import com.example.DepartmentalStoreCrud.repository.CustomerRepository;
 import com.example.DepartmentalStoreCrud.repository.OrderRepository;
 import com.example.DepartmentalStoreCrud.repository.ProductInventoryRepository;
 import com.example.DepartmentalStoreCrud.service.BackorderService;
-import com.example.DepartmentalStoreCrud.service.EmailSenderService;
 import com.example.DepartmentalStoreCrud.service.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,9 +40,6 @@ public class OrderServiceTest {
 
     @Mock
     private BackorderRepository backorderRepository;
-
-    @Mock
-    private EmailSenderService emailSenderService;
 
     @InjectMocks
     private OrderService orderService;

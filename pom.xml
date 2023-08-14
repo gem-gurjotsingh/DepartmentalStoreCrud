@@ -14,11 +14,10 @@
 	<name>DepartmentalStore</name>
 	<description>Departmental store project for Spring Boot CRUD</description>
 	<properties>
-		<java.version>17</java.version>
+		<java.version>11</java.version>
 		<springdoc.version>1.6.11</springdoc.version>
 		<spotbugs.version>4.5.2</spotbugs.version>
 		<spotbug.plugin.version>4.5.2.0</spotbug.plugin.version>
-		<owasp.dependencycheck.version>7.4.4</owasp.dependencycheck.version>
 		<maven.checkstyle.version>3.1.2</maven.checkstyle.version>
 		<poi.version>4.1.2</poi.version>
 		<jacoco.plugin.version>0.8.8</jacoco.plugin.version>
@@ -87,18 +86,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.owasp</groupId>
-				<artifactId>dependency-check-maven</artifactId>
-				<version>${owasp.dependencycheck.version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>com.github.spotbugs</groupId>
